@@ -105,6 +105,17 @@ class UI:
         for i in range(0, lenght):
             self.window.delch(y, x+i)
 
+    def print_status_bar(self, string):
+        self.window.addstr(self.height-2, 3, string[:self.width-4])
+        self.window.refresh()
+
+    def echo_status_bar(self):
+        self.window.move(self.height-4, 3)
+        self.window.refresh()
+
+    def clear_staus_bar(self):
+        pass
+
     def add_eventlistener(self, event, func):
         try:
             self.event_listeners[event]

@@ -1,3 +1,4 @@
+import subprocess
 from subprocess import check_output
 from os import path
 
@@ -54,15 +55,24 @@ class ADB(FileManager):
         else:
             return False
 
-    def push(self, file):
-        command = ['adb', 'push', file, self.current_path]
-        output = check_output(command).decode('utf-8')
+    def push(self, file, output_printer):
+        command = ['adb', 'push', '-p', file, self.current_path]
+        try:
+            for output in execute(command):
+                output_printer(output)
+            output_printer('Transfer success ({})'.format(output))
+        except subprocess.CalledProcessError:
+            output_printer('Transfer failed')
         self._get_current_folder_content()
 
-    def pull(self, directory):
-        command = ['adb', 'pull', path.join(self.current_path, self.current_file()), directory]
-        output = check_output(command).decode('utf-8')
-
+    def pull(self, directory, output_printer):
+        command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
+        try:
+            for output in execute(command):
+                output_printer(output)
+            output_printer('Transfer success ({})'.format(output))
+        except subprocess.CalledProcessError:
+            output_printer('Transfer failed')
 
     def get_device_name(self):
         command = ['adb', 'devices', '-l']
@@ -84,3 +94,18 @@ class ADB(FileManager):
             return True
         else:
             return False
+
+
+
+# Taken from: http://stackoverflow.com/questions/4417546/constantly-print-subprocess-output-while-process-is-running
+def execute(command):
+    popen = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    stdout_lines = iter(popen.stderr.readline, "")
+    for stdout_line in stdout_lines:
+        yield stdout_line
+
+    popen.stdout.close()
+    returncode =  popen.wait()
+    if returncode != 0:
+        raise subprocess.CalledProcessError(returncode, command)
+

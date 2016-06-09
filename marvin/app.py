@@ -88,12 +88,15 @@ class App:
 
     def transfer(self):
         if self.focused == self.adb:
-            self.adb.pull(self.fm.get_current_path())
+            self.ui.echo_status_bar()
+            self.adb.pull(self.fm.get_current_path(), lambda out: self.ui.print_status_bar(out))
             self.fm._get_current_folder_content() # private, naughty
             self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
         else:
-            self.adb.push(self.fm.focused_path())
+            self.ui.echo_status_bar()
+            self.adb.push(self.fm.focused_path(), lambda out: self.ui.print_status_bar(out))
             self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
+        self.ui.clear_staus_bar()
 
     def quit(self):
         self.ui.quit()
