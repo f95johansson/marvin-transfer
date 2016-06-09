@@ -19,9 +19,9 @@ def main():
     except KeyboardInterrupt:
         print('Quiting')
 
+    """ Overprotecting error handling (for release)
     except NameError:
         pass
-    """ Overprotecting error handling (for release)    
     except ADBError as e:
         print('Adb error: {}'.format(e))
 

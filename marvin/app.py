@@ -13,6 +13,7 @@ class App:
     def run(self, window):
         self.ui = UI(window)
         self.focused_column = self.ui.left_column
+        self.focused_column.focused = True
 
         self.ui.add_eventlistener(UI.event.RESIZE, self.resize)
         self.ui.add_eventlistener(UI.event.UP, self.up)
@@ -49,11 +50,16 @@ class App:
         self.focused_column.unmark_position(self.focused.get_position())
         self.focused.move_up()
         self.focused_column.mark_position(self.focused.get_position())
+        if self.focused.get_position() < self.focused_column.scrolled:
+            self.focused_column.scroll(-1)
 
     def down(self):
-        self.focused_column.unmark_position(self.focused.get_position())
-        self.focused.move_down()
-        self.focused_column.mark_position(self.focused.get_position())
+        if self.focused.get_position() < len(self.focused.listdir())-1:
+            self.focused_column.unmark_position(self.focused.get_position())
+            self.focused.move_down()
+            self.focused_column.mark_position(self.focused.get_position())
+            if self.focused.get_position() - self.focused_column.scrolled > self.ui.height-4:
+                self.focused_column.scroll(1)
 
     def left(self):
         success = self.focused.cd_out()
@@ -69,14 +75,18 @@ class App:
         if self.focused == self.adb:
             self.focused = self.fm
             self.focused_column = self.ui.right_column
+            self.ui.left_column.unfocus()
+            self.ui.right_column.focus()
         else:
             self.focused = self.adb
             self.focused_column = self.ui.left_column
+            self.ui.right_column.unfocus()
+            self.ui.left_column.focus()
 
     def transfer(self):
         if self.focused == self.adb:
             self.adb.pull(self.fm.get_current_path())
-            self.fm._get_current_folder_content()
+            self.fm._get_current_folder_content() # private, naughty
             self.update_file_list(manager=self.fm, manager_column=self.ui.right_column)
         else:
             self.adb.push(self.fm.focused_path())
