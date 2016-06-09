@@ -1,1 +1,1 @@
-from main import main
+from marvin.main import main
