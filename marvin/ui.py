@@ -55,7 +55,7 @@ class UI:
             if self.window.is_wintouched():
                 self.window.refresh()
             self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)
-            self.right_column.refresh( 0, 0, 2,self.left_column.width+1 , self.height-2, self.left_column.width+self.right_column.width-1)
+            self.right_column.refresh( 0, 0, 2,self.left_column.width+2 , self.height-2, self.left_column.width+self.right_column.width)
 
             event = self.window.getch() # blocking
 
@@ -84,10 +84,16 @@ class UI:
     def quit(self):
         self.running = False
 
-    def clear(self):
-        self.window.clear()
-        self.window.vline(1, self.left_column.width, '|', self.height-3)
-
+    def clear(self, column=None):
+        if column == None:
+            self.window.clear()
+            self.window.vline(1, self.left_column.width, '|', self.height-3)
+        elif column == self.left_column:
+            column.clear()
+            self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)
+        elif column == self.right_column:
+            column.clear()
+            self.right_column.refresh( 0, 0, 2,self.left_column.width+2 , self.height-2, self.left_column.width+self.right_column.width)
 
     def add_string(self, x, y, string, filled=False):
         if filled:
@@ -119,7 +125,7 @@ class UI:
             try:
                 getattr(self, event)
             except:
-                def basic_event():
+                def basic_event(self):
                     self.event_listeners[event]()
 
                 setattr(self, event, basic_event)#lambda self: pdb.set_trace())#self.event_listeners[event]())
