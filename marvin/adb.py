@@ -86,7 +86,9 @@ class ADB(FileManager):
         output_list = output.split('\n')
         if len(output_list) >= 2:
             device_info = output_list[1]
-            device_name = device_info.split(' ')[14].replace('model:', '')
+            start_index = device_info.find('model:') + 6 #len('model:')
+            end_index = device_info.find(' ', start_index)
+            device_name = device_info[start_index:end_index]
             return device_name
         else:
             raise ADBError('No device was found')
