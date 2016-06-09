@@ -54,11 +54,15 @@ class ADB(FileManager):
         else:
             return False
 
-    def push(self):
-        pass
+    def push(self, file):
+        command = ['adb', 'push', file, self.current_path]
+        output = check_output(command).decode('utf-8')
+        self._get_current_folder_content()
 
-    def pull(self):
-        pass
+    def pull(self, directory):
+        command = ['adb', 'pull', path.join(self.current_path, self.current_file()), directory]
+        output = check_output(command).decode('utf-8')
+
 
     def get_device_name(self):
         command = ['adb', 'devices', '-l']

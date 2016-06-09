@@ -20,6 +20,7 @@ class Events:
     RIGHT = 'right'
     Q = 'q'
     SPACE = ' '
+    ENTER = 'enter'
 
 class UI:
     event = Events()
@@ -41,6 +42,7 @@ class UI:
             UI.event.RIGHT: blank,
             UI.event.Q: blank,
             UI.event.SPACE: blank,
+            UI.event.ENTER: blank
         }
         #self.setup_basic_events()
 
@@ -69,8 +71,9 @@ class UI:
                 elif self._keycode_to_str(event) == 'q':
                     self.q()
                 elif self._keycode_to_str(event) == ' ':
-                    self.window.addstr(0, 0, 'space')
                     self.space()
+                elif event == curses.KEY_ENTER or event == 10 or event == 13:
+                    self.enter()
 
             except curses.error:
                 raise UIError('Invalid UI operation')
@@ -83,6 +86,8 @@ class UI:
 
     def clear(self):
         self.window.clear()
+        self.left_column.window.clear()
+        self.right_column.window.clear()
 
     def add_string(self, x, y, string, filled=False):
         if filled:
@@ -93,20 +98,6 @@ class UI:
     def delete_string(self, x, y, lenght):
         for i in range(0, lenght):
             self.window.delch(y, x+i)
-
-    def toggle_string_background(self, x, y, length):
-        string = self.window.getstr(y, x, length)
-        self.window.addstr(y, x, string, curses.A_REVERSE)
-
-    def add_list(self, x, y, list, marked=False):
-        for i, value in enumerate(list):
-            if (y+i >= self.height):
-                break
-
-            if type(marked) == int and marked == i:
-                self.add_string(x, y+i, value, filled=True)
-            else:
-                self.add_string(x, y+i, value)
 
     def add_eventlistener(self, event, func):
         try:
@@ -148,3 +139,7 @@ class UI:
 
     def space(self):
         self.event_listeners[UI.event.SPACE]()
+
+    def enter(self):
+        self.event_listeners[UI.event.ENTER]()
+

@@ -21,6 +21,7 @@ class App:
         self.ui.add_eventlistener(UI.event.RIGHT, self.right)
         self.ui.add_eventlistener(UI.event.Q, self.quit)
         self.ui.add_eventlistener(UI.event.SPACE, self.switch)
+        self.ui.add_eventlistener(UI.event.ENTER, self.transfer)
 
         self.update_file_list(manager=self.adb, manager_column=self.ui.left_column)
         self.update_file_list(manager=self.fm, manager_column=self.ui.right_column)
@@ -71,6 +72,15 @@ class App:
         else:
             self.focused = self.adb
             self.focused_column = self.ui.left_column
+
+    def transfer(self):
+        if self.focused == self.adb:
+            self.adb.pull(self.fm.get_current_path())
+            self.fm._get_current_folder_content()
+            self.update_file_list(manager=self.fm, manager_column=self.ui.right_column)
+        else:
+            self.adb.push(self.fm.focused_path())
+            self.update_file_list(manager=self.adb, manager_column=self.ui.left_column)
 
     def quit(self):
         self.ui.quit()
