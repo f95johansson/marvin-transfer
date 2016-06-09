@@ -106,7 +106,9 @@ class UI:
             self.window.delch(y, x+i)
 
     def print_status_bar(self, string):
-        self.window.addstr(self.height-2, 3, string[:self.width-4])
+        self.window.move(self.height-2, 3)
+        self.window.deleteln()
+        self.window.addstr(self.height-2, 3, string[:self.width-5])
         self.window.refresh()
 
     def echo_status_bar(self):

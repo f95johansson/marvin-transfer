@@ -56,23 +56,29 @@ class ADB(FileManager):
             return False
 
     def push(self, file, output_printer):
-        command = ['adb', 'push', '-p', file, self.current_path]
-        try:
-            for output in execute(command):
-                output_printer(output)
-            output_printer('Transfer success ({})'.format(output))
-        except subprocess.CalledProcessError:
-            output_printer('Transfer failed')
-        self._get_current_folder_content()
+        if self.path_exist(path.join(self.current_path, path.basename(file))):
+            output_printer('Transfer failed: filename already exist')
+        else:
+            command = ['adb', 'push', '-p', file, self.current_path]
+            try:
+                for output in execute(command):
+                    output_printer(output)
+                output_printer('Transfer success ({})'.format(output))
+            except subprocess.CalledProcessError:
+                output_printer('Transfer failed: {}'.format(output))
+            self._get_current_folder_content()
 
     def pull(self, directory, output_printer):
-        command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
-        try:
-            for output in execute(command):
-                output_printer(output)
-            output_printer('Transfer success ({})'.format(output))
-        except subprocess.CalledProcessError:
-            output_printer('Transfer failed')
+        if path.exists(path.join(directory, self.current_file())):
+            output_printer('Transfer failed: filename already exist')
+        else:
+            command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
+            try:
+                for output in execute(command):
+                    output_printer(output)
+                output_printer('Transfer success ({})'.format(output))
+            except subprocess.CalledProcessError:
+                output_printer('Transfer failed: {}'.format(output))
 
     def get_device_name(self):
         command = ['adb', 'devices', '-l']
@@ -84,6 +90,16 @@ class ADB(FileManager):
             return device_name
         else:
             raise ADBError('No device was found')
+
+    def path_exist(self, path):
+        confirmation_string = ': No such file or directory'
+        command = ['adb', 'shell', 'cd {} && ls "{}"'
+                  .format(self.current_path, path)]
+        output = check_output(command).decode('utf-8').split('\r\n')[0]
+        if confirmation_string in output:
+            return False
+        else:
+            return True
 
     def is_folder(self, path):
         confirmation_string = 'not a file 356896741'
