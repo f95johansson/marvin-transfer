@@ -3,18 +3,15 @@ from marvin.app import App
 from marvin.adb import ADBError
 
 def parser():
-    print('parsing')
+    pass
 
 def main():
     parser()
 
     try:
         application = App()
-    except ADBError as e:
-        print('Adb error: {}'.format(e))
-
-    try:
         ui.run(application.run)
+        print('Quiting')
 
     except KeyboardInterrupt:
         print('Quiting')

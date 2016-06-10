@@ -1,9 +1,11 @@
 import curses
+import os
 from math import floor, ceil
 
 from marvin.ui_column import UIColumn
 
 def run(func):
+    os.environ.setdefault('ESCDELAY', '25') # default 1000ms
     curses.wrapper(func)
 
 def blank(*args):
@@ -21,8 +23,12 @@ class Events:
     LEFT = 'left'
     RIGHT = 'right'
     Q = 'q'
-    SPACE = ' '
+    SPACE = 'space'
     ENTER = 'enter'
+    TAB = 'tab'
+    LETTER = 'letter'
+    BACKSPACE = 'backspace'
+    ESCAPE = 'escape'
 
 class UI:
     event = Events()
@@ -44,7 +50,11 @@ class UI:
             UI.event.RIGHT: blank,
             UI.event.Q: blank,
             UI.event.SPACE: blank,
-            UI.event.ENTER: blank
+            UI.event.ENTER: blank,
+            UI.event.TAB: blank,
+            UI.event.LETTER: blank,
+            UI.event.BACKSPACE: blank,
+            UI.event.ESCAPE: blank
         }
         #self.setup_basic_events()
 
@@ -57,11 +67,11 @@ class UI:
             self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)
             self.right_column.refresh( 0, 0, 2,self.left_column.width+2 , self.height-2, self.left_column.width+self.right_column.width)
 
-            event = self.window.getch() # blocking
+            event = self.window.get_wch() # blocking
 
             #try:
             if event == curses.KEY_RESIZE:
-                self.resizing()
+                self.resize()
             elif event == curses.KEY_UP:
                 self.up()
             elif event == curses.KEY_DOWN:
@@ -70,12 +80,31 @@ class UI:
                 self.left()
             elif event == curses.KEY_RIGHT:
                 self.right()
-            elif event == ord('q'):
-                self.q()
-            elif event == ord(' '):
-                self.space()
-            elif event == curses.KEY_ENTER or event == 10 or event == 13:
+            elif event == curses.KEY_ENTER or event == 10 or event == 13 \
+                    or (type(event) == str and (ord(event) == 10 or ord(event) == 13)):
                 self.enter()
+            elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
+                    or (type(event) == str and (ord(event) == 8 or ord(event) == 127)):
+                self.backspace()
+            elif event == '\t':
+                self.tab()
+            elif event == 'q':
+                self.q()
+            elif event == ' ':
+                self.space()
+            elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
+                self.window.nodelay(True)
+                c = self.window.getch()
+                if c == -1 or c == 27: # Esc
+                    self.escape()
+                else: # Alt
+                    pass
+                self.window.nodelay(False)
+
+
+            elif type(event) == str: # Assumes letter
+                self.letter(event)
+
 
             #except curses.error:
             #    raise UIError('Invalid UI operation')
@@ -106,17 +135,13 @@ class UI:
             self.window.delch(y, x+i)
 
     def print_status_bar(self, string):
-        self.window.move(self.height-2, 3)
-        self.window.deleteln()
+        self.clear_status_bar()
         self.window.addstr(self.height-2, 3, string[:self.width-5])
         self.window.refresh()
 
-    def echo_status_bar(self):
-        self.window.move(self.height-4, 3)
-        self.window.refresh()
-
-    def clear_staus_bar(self):
-        pass
+    def clear_status_bar(self):
+        self.window.move(self.height-2, 3)
+        self.window.deleteln()
 
     def add_eventlistener(self, event, func):
         try:
@@ -124,14 +149,6 @@ class UI:
             self.event_listeners[event] = func
         except KeyError:
             raise IllegalArgumentError('No such event ({})'.format(event))
-
-    # Events
-    def resizing(self):
-        (self.height, self.width) = self.window.getmaxyx()
-        self.left_column.resize(self.height-3, floor((self.width-3)/2))
-        self.right_column.resize(self.height-3, ceil((self.width-3)/2))
-        self.window.vline(1, self.left_column.width, '|', self.height-3)
-        self.event_listeners[UI.event.RESIZE](self.width, self.height)
 
     def setup_basic_events(self):
         for event in self.event_listeners:
@@ -144,7 +161,15 @@ class UI:
                 setattr(self, event, basic_event)#lambda self: pdb.set_trace())#self.event_listeners[event]())
 
 
-    def up(self):
+    # Events
+    def resize(self):
+        (self.height, self.width) = self.window.getmaxyx()
+        self.left_column.resize(self.height-3, floor((self.width-3)/2))
+        self.right_column.resize(self.height-3, ceil((self.width-3)/2))
+        self.window.vline(1, self.left_column.width, '|', self.height-3)
+        self.event_listeners[UI.event.RESIZE](self.width, self.height)
+
+    def up(self):   
         self.event_listeners[UI.event.UP]()
 
     def down(self):
@@ -165,3 +190,14 @@ class UI:
     def enter(self):
         self.event_listeners[UI.event.ENTER]()
 
+    def tab(self):
+        self.event_listeners[UI.event.TAB]()
+
+    def letter(self, letter):
+        self.event_listeners[UI.event.LETTER](letter)
+
+    def backspace(self):
+        self.event_listeners[UI.event.BACKSPACE]()
+
+    def escape(self):
+        self.event_listeners[UI.event.ESCAPE]()
