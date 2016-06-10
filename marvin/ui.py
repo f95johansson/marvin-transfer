@@ -22,7 +22,6 @@ class Events:
     DOWN = 'down'
     LEFT = 'left'
     RIGHT = 'right'
-    Q = 'q'
     SPACE = 'space'
     ENTER = 'enter'
     TAB = 'tab'
@@ -48,7 +47,6 @@ class UI:
             UI.event.DOWN: blank,
             UI.event.LEFT: blank,
             UI.event.RIGHT: blank,
-            UI.event.Q: blank,
             UI.event.SPACE: blank,
             UI.event.ENTER: blank,
             UI.event.TAB: blank,
@@ -88,8 +86,6 @@ class UI:
                 self.backspace()
             elif event == '\t':
                 self.tab()
-            elif event == 'q':
-                self.q()
             elif event == ' ':
                 self.space()
             elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
@@ -104,6 +100,8 @@ class UI:
 
             elif type(event) == str: # Assumes letter
                 self.letter(event)
+            else:
+                self.print_status_bar(str(event))
 
 
             #except curses.error:
@@ -180,9 +178,6 @@ class UI:
 
     def right(self):
         self.event_listeners[UI.event.RIGHT]()
-
-    def q(self):
-        self.event_listeners[UI.event.Q]()
 
     def space(self):
         self.event_listeners[UI.event.SPACE]()

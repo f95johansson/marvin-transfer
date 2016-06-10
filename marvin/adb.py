@@ -113,18 +113,22 @@ class ADB(FileManager):
         """Transfer current file from android device to the given directory on local device"""
 
         self.is_device_connected()
-        if path.exists(path.join(directory, self.current_file())):
-            output_printer('Transfer failed: filename already exist')
-        else:
-            command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
-            try:
-                for output in execute(command):
-                    output_printer(output)
-                output_printer('Transfer success ({})'.format(output))
-            except KeyboardInterrupt:
-                output_printer('Transfer canceled')
-            except subprocess.CalledProcessError:
-                output_printer('Transfer failed: {}'.format(output))
+        try:
+            if path.exists(path.join(directory, self.current_file())):
+                output_printer('Transfer failed: filename already exist')
+            else:
+                command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
+                try:
+                    for output in execute(command):
+                        output_printer(output)
+                    output_printer('Transfer success ({})'.format(output))
+                except KeyboardInterrupt:
+                    output_printer('Transfer canceled')
+                except subprocess.CalledProcessError:
+                    output_printer('Transfer failed: {}'.format(output))
+
+        except LookupError: # for self.current_file()
+            output_printer('No file selected to transfer')
 
     def get_device_name(self):
         """Return the model of the android device"""

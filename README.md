@@ -3,6 +3,7 @@
 ### TODO
 
 * Detect when disconnected
+* Sort list with folder on top (with some distinction)
 * Handle resize
 * Add delete option (start with files only)
 * Add title bar
