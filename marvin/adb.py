@@ -44,7 +44,7 @@ class ADB(FileManager):
 
     def _get_current_folder_content(self):
         self.is_device_connected()
-        command = ['adb', 'shell', 'cd "{}" && ls'.format(self.current_path)]
+        command = ['adb', 'shell', 'cd "{}" && ls -a'.format(self.current_path)]
         output = check_output(command).decode('utf-8')
         output_list = output.split('\r\n')
         try:
@@ -101,12 +101,12 @@ class ADB(FileManager):
             command = ['adb', 'push', '-p', file, self.current_path]
             try:
                 for output in execute(command):
-                    output_printer(output)
-                output_printer('Transfer success ({})'.format(output))
+                    output_printer(_remove_newlines(output))
+                output_printer('Transfer success ({})'.format(_remove_newlines(output)))
             except KeyboardInterrupt:
                 output_printer('Transfer canceled')
             except subprocess.CalledProcessError:
-                output_printer('Transfer failed: {}'.format(output))
+                output_printer('Transfer failed: {}'.format(_remove_newlines(output)))
             self._get_current_folder_content()
 
     def pull(self, directory, output_printer):
@@ -120,12 +120,12 @@ class ADB(FileManager):
                 command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
                 try:
                     for output in execute(command):
-                        output_printer(output)
-                    output_printer('Transfer success ({})'.format(output))
+                        output_printer(_remove_newlines(output))
+                    output_printer('Transfer success ({})'.format(_remove_newlines(output)))
                 except KeyboardInterrupt:
                     output_printer('Transfer canceled')
                 except subprocess.CalledProcessError:
-                    output_printer('Transfer failed: {}'.format(output))
+                    output_printer('Transfer failed: {}'.format(_remove_newlines(output)))
 
         except LookupError: # for self.current_file()
             output_printer('No file selected to transfer')
@@ -193,4 +193,9 @@ def execute(command):
     returncode =  popen.wait()
     if returncode != 0:
         raise subprocess.CalledProcessError(returncode, command)
+
+
+def _remove_newlines(string):
+    return string.replace('\n', '').replace('\r', '')
+
 

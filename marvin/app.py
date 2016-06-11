@@ -16,10 +16,10 @@ class App:
         self.focused_column.focused = True
 
         self.ui.add_eventlistener(UI.event.RESIZE, self.resize)
-        self.ui.add_eventlistener(UI.event.UP, self.up)
-        self.ui.add_eventlistener(UI.event.DOWN, self.down)
-        self.ui.add_eventlistener(UI.event.LEFT, self.left)
-        self.ui.add_eventlistener(UI.event.RIGHT, self.right)
+        self.ui.add_eventlistener(UI.event.UP, self.move_up)
+        self.ui.add_eventlistener(UI.event.DOWN, self.move_down)
+        self.ui.add_eventlistener(UI.event.LEFT, self.cd_out)
+        self.ui.add_eventlistener(UI.event.RIGHT, self.cd_in)
         self.ui.add_eventlistener(UI.event.ESCAPE, self.quit)
         self.ui.add_eventlistener(UI.event.SPACE, self.switch)
         self.ui.add_eventlistener(UI.event.TAB, self.switch)
@@ -30,7 +30,7 @@ class App:
         self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
         self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
 
-        self.ui.add_string(0, 0, self.adb.get_device_name(), filled=True)
+        self.ui.set_title_bar('Local', self.adb.get_device_name())
 
         self.ui.start() # blocking
 
@@ -50,16 +50,16 @@ class App:
             manager_column.update_content([empty_message])
 
     def resize(self, width, height):
-        self.ui.add_string(0, 0, 'resizing')
+        pass
 
-    def up(self):
+    def move_up(self):
         self.focused_column.unmark_position(self.focused.get_position())
         self.focused.move_up()
         self.focused_column.mark_position(self.focused.get_position())
         if self.focused.get_position() < self.focused_column.scrolled:
             self.focused_column.scroll(-1)
 
-    def down(self):
+    def move_down(self):
         if self.focused.get_position() < len(self.focused.listdir())-1:
             self.focused_column.unmark_position(self.focused.get_position())
             self.focused.move_down()
@@ -67,13 +67,13 @@ class App:
             if self.focused.get_position() - self.focused_column.scrolled > self.ui.height-4:
                 self.focused_column.scroll(1)
 
-    def left(self):
+    def cd_out(self):
         success = self.focused.cd_out()
         if success:
             self.update_file_list()
             self.ui.clear_status_bar()
 
-    def right(self):
+    def cd_in(self):
         success = self.focused.cd_in()
 
         if success:

@@ -1,6 +1,7 @@
 import curses
 import os
-from math import floor, ceil
+from math import floor
+from math import ceil
 
 from marvin.ui_column import UIColumn
 
@@ -17,44 +18,39 @@ class UIError(Exception):
     pass
 
 class Events:
-    RESIZE = 'resize'
-    UP = 'up'
-    DOWN = 'down'
-    LEFT = 'left'
-    RIGHT = 'right'
-    SPACE = 'space'
-    ENTER = 'enter'
-    TAB = 'tab'
-    LETTER = 'letter'
-    BACKSPACE = 'backspace'
-    ESCAPE = 'escape'
+    def __init__(self):
+        self.RESIZE = 'resize'
+        self.UP = 'up'
+        self.DOWN = 'down'
+        self.LEFT = 'left'
+        self.RIGHT = 'right'
+        self.SPACE = 'space'
+        self.ENTER = 'enter'
+        self.TAB = 'tab'
+        self.LETTER = 'letter'
+        self.BACKSPACE = 'backspace'
+        self.ESCAPE = 'escape'
+        self.CTRL_D = 'ctrl_d'
 
 class UI:
     event = Events()
 
     def __init__(self, window):
         self.window = window
+        curses.use_default_colors() # take colors from terminal
         curses.curs_set(0) # hide cursor
         (self.height, self.width) = self.window.getmaxyx()
         self.left_column = UIColumn(curses.newpad(self.height-3, floor((self.width-3)/2)))
         self.right_column = UIColumn(curses.newpad(self.height-3, ceil((self.width-3)/2)))
         self.clear()
 
+        self.left_title = ''
+        self.right_title = ''
+
         self.running = False
-        self.event_listeners = {
-            UI.event.RESIZE: blank,
-            UI.event.UP: blank,
-            UI.event.DOWN: blank,
-            UI.event.LEFT: blank,
-            UI.event.RIGHT: blank,
-            UI.event.SPACE: blank,
-            UI.event.ENTER: blank,
-            UI.event.TAB: blank,
-            UI.event.LETTER: blank,
-            UI.event.BACKSPACE: blank,
-            UI.event.ESCAPE: blank
-        }
-        #self.setup_basic_events()
+        self.event_listeners = {}
+        for event in vars(UI.event).values():
+            self.event_listeners[event] = blank # setup empty function as default for all events
 
     def start(self):
         self.running = True
@@ -63,45 +59,55 @@ class UI:
             if self.window.is_wintouched():
                 self.window.refresh()
             self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)
-            self.right_column.refresh( 0, 0, 2,self.left_column.width+2 , self.height-2, self.left_column.width+self.right_column.width)
+            self.right_column.refresh( 0,0, 2,self.left_column.width+2 , self.height-2, self.left_column.width+self.right_column.width)
 
-            event = self.window.get_wch() # blocking
+            try:
+                event = self.window.get_wch() # blocking
+            except curses.error:
+                event = None
+
 
             #try:
             if event == curses.KEY_RESIZE:
                 self.resize()
+                self.event_listeners[UI.event.RESIZE](self.width, self.height)
+
             elif event == curses.KEY_UP:
-                self.up()
+                self.event_listeners[UI.event.UP]()
+
             elif event == curses.KEY_DOWN:
-                self.down()
+                self.event_listeners[UI.event.DOWN]()
+
             elif event == curses.KEY_LEFT:
-                self.left()
+                self.event_listeners[UI.event.LEFT]()
+
             elif event == curses.KEY_RIGHT:
-                self.right()
-            elif event == curses.KEY_ENTER or event == 10 or event == 13 \
-                    or (type(event) == str and (ord(event) == 10 or ord(event) == 13)):
-                self.enter()
+                self.event_listeners[UI.event.RIGHT]()
+
+            elif event == curses.KEY_ENTER or event == '\n' or event == '\r':
+                self.event_listeners[UI.event.ENTER]()
+
             elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
                     or (type(event) == str and (ord(event) == 8 or ord(event) == 127)):
-                self.backspace()
+                self.event_listeners[UI.event.BACKSPACE]()
+
             elif event == '\t':
-                self.tab()
+                self.event_listeners[UI.event.TAB]()
+
             elif event == ' ':
-                self.space()
+                self.event_listeners[UI.event.SPACE]()
+
             elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
                 self.window.nodelay(True)
                 c = self.window.getch()
                 if c == -1 or c == 27: # Esc
-                    self.escape()
+                    self.event_listeners[UI.event.ESCAPE]()
                 else: # Alt
                     pass
                 self.window.nodelay(False)
 
-
             elif type(event) == str: # Assumes letter
-                self.letter(event)
-            else:
-                self.print_status_bar(str(event))
+                self.event_listeners[UI.event.LETTER](event)
 
 
             #except curses.error:
@@ -114,7 +120,7 @@ class UI:
     def clear(self, column=None):
         if column == None:
             self.window.clear()
-            self.window.vline(1, self.left_column.width, '|', self.height-3)
+            self.window.vline(1, self.left_column.width, '|', self.height-2)
         elif column == self.left_column:
             column.clear()
             self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)
@@ -122,19 +128,20 @@ class UI:
             column.clear()
             self.right_column.refresh( 0, 0, 2,self.left_column.width+2 , self.height-2, self.left_column.width+self.right_column.width)
 
-    def add_string(self, x, y, string, filled=False):
-        if filled:
-            self.window.addstr(y, x, string, curses.A_REVERSE)
-        else:
-            self.window.addstr(y, x, string)
+    def set_title_bar(self, left_title=None, right_title=None):
+        self.left_title = self.left_title if left_title == None else left_title
+        self.right_title = self.right_title if right_title == None else right_title
+        self._update_title_bar()
 
-    def delete_string(self, x, y, lenght):
-        for i in range(0, lenght):
-            self.window.delch(y, x+i)
+    def _update_title_bar(self):
+        string = ' {title: <{lfill}} {rtitle: <{rfill}} ' \
+            .format(title=self.left_title, lfill=str(self.left_column.width), \
+                    rtitle=self.right_title, rfill=str(self.right_column.width))
+        self.window.addstr(0, 0, string, curses.A_REVERSE)
 
     def print_status_bar(self, string):
         self.clear_status_bar()
-        self.window.addstr(self.height-2, 3, string[:self.width-5])
+        self.window.addnstr(self.height-2, 3, string, self.width-4)
         self.window.refresh()
 
     def clear_status_bar(self):
@@ -148,51 +155,11 @@ class UI:
         except KeyError:
             raise IllegalArgumentError('No such event ({})'.format(event))
 
-    def setup_basic_events(self):
-        for event in self.event_listeners:
-            try:
-                getattr(self, event)
-            except:
-                def basic_event(self):
-                    self.event_listeners[event]()
-
-                setattr(self, event, basic_event)#lambda self: pdb.set_trace())#self.event_listeners[event]())
-
-
-    # Events
     def resize(self):
         (self.height, self.width) = self.window.getmaxyx()
+        self.window.clear()
         self.left_column.resize(self.height-3, floor((self.width-3)/2))
         self.right_column.resize(self.height-3, ceil((self.width-3)/2))
-        self.window.vline(1, self.left_column.width, '|', self.height-3)
-        self.event_listeners[UI.event.RESIZE](self.width, self.height)
+        self.window.vline(1, self.left_column.width, '|', self.height-2)
+        self._update_title_bar()
 
-    def up(self):   
-        self.event_listeners[UI.event.UP]()
-
-    def down(self):
-        self.event_listeners[UI.event.DOWN]()
-
-    def left(self):
-        self.event_listeners[UI.event.LEFT]()
-
-    def right(self):
-        self.event_listeners[UI.event.RIGHT]()
-
-    def space(self):
-        self.event_listeners[UI.event.SPACE]()
-
-    def enter(self):
-        self.event_listeners[UI.event.ENTER]()
-
-    def tab(self):
-        self.event_listeners[UI.event.TAB]()
-
-    def letter(self, letter):
-        self.event_listeners[UI.event.LETTER](letter)
-
-    def backspace(self):
-        self.event_listeners[UI.event.BACKSPACE]()
-
-    def escape(self):
-        self.event_listeners[UI.event.ESCAPE]()

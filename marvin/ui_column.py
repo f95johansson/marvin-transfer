@@ -15,20 +15,30 @@ class UIColumn:
         self.content = content
         self.window.resize(len(content), self.width)
         (self.height, self.width) = self.window.getmaxyx()
-        self.draw()
+        self._draw()
 
-    def resize(self, width, height):
-        self.window.resize(height, width)
-        (self.height, self.width) = self.window.getmaxyx()
+    def resize(self, height, width):
+        self.window.resize(self.height, width)
+        self.window.touchwin()
+        self.scrolled = 0
+        (_, self.width) = self.window.getmaxyx()
+        self._draw()
 
     def scroll(self, length=1):
         self.scrolled += length
 
-    def refresh(self, y, x, min_col, min_row, max_col, max_row):
+    def refresh(self, y, x, min_row, min_col, max_row, max_col):
         if self.window.is_wintouched():
-            self.window.refresh(y+self.scrolled, x, min_col, min_row, max_col, max_row)
+            try:
+                self.window.refresh(y+self.scrolled, x, min_row, min_col, max_row, max_col)
+            except curses.error:
+                """This error occur when resizing terminal window in both
+                width and height in a fast motion.
+                I can't figure out why this error occur and the curses stupid
+                c error messages isn't any help either. So for now, I leave it
+                """
 
-    def draw(self):
+    def _draw(self):
         for i, value in enumerate(self.content):
             if (i >= self.height):
                 break
@@ -42,9 +52,7 @@ class UIColumn:
                 self.window.addstr(i, 0, value[:self.width-1])
 
     def clear(self):
-        string = ' '*(self.width-1)
-        for i in range(self.height):
-            self.window.addstr(i, 0, string)
+        self.window.erase()
 
     def mark_position(self, index):
         self.marked_positions.add(index)
@@ -68,6 +76,10 @@ class UIColumn:
         self.window.addstr(index, 0, string, curses.A_REVERSE)
 
     def _add_underline(self, index):
+        string = self.content[index][:self.width-1]
+        self.window.addstr(index, 0, string, curses.A_UNDERLINE)
+
+    def _add_bold(self, index):
         string = self.content[index][:self.width-1]
         self.window.addstr(index, 0, string, curses.A_BOLD)
 
