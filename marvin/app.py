@@ -20,6 +20,7 @@ class App:
         self.focused_column = self.ui.left_column
         self.focused_column.focused = True
 
+        self.ui.add_eventlistener(UI.event.RESIZE, self.resize)
         self.ui.add_eventlistener(UI.event.UP, self.move_up)
         self.ui.add_eventlistener(UI.event.DOWN, self.move_down)
         self.ui.add_eventlistener(UI.event.LEFT, self.cd_out)
@@ -57,6 +58,12 @@ class App:
             manager_column.reset_positions()
             manager_column.update_content([empty_message])
 
+    def resize(self, width, height):
+        scroll_vs_position = self.focused.get_position() - self.focused_column.scrolled
+        if scroll_vs_position > self.ui.height-4:
+            self.focused_column.scroll(scroll_vs_position - (self.ui.height-4))
+
+
     def move_up(self):
         """Will move position up on focused file manager and scroll if necessary"""
         self.focused_column.unmark_position(self.focused.get_position())
@@ -72,6 +79,7 @@ class App:
             self.focused.move_down()
             self.focused_column.mark_position(self.focused.get_position())
             if self.focused.get_position() - self.focused_column.scrolled > self.ui.height-4:
+                # magic number 4 = combined height of title bar + status bar
                 self.focused_column.scroll(1)
 
     def cd_out(self):
@@ -79,6 +87,10 @@ class App:
         success = self.focused.cd_out()
         if success:
             self.update_file_list()
+            scroll_vs_position = self.focused.get_position() - self.focused_column.scrolled 
+            if scroll_vs_position > self.ui.height-4:
+                self.focused_column.scroll(scroll_vs_position - (self.ui.height-4))
+
             self.ui.clear_status_bar()
 
     def cd_in(self):
