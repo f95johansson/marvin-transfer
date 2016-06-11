@@ -18,7 +18,7 @@ def parser():
 def print_help():
     """Print instructions on how to use this program"""
     print(
-    ("Marvin transfer 0.9\n"
+    ("Marvin transfer 0.1.0\n"
     "To easily transfer file and folder between android device and computer\n"
     "\n"
     "Usage:\n"
@@ -26,6 +26,7 @@ def print_help():
     "  <enter> to transfer currently selected file/foder\n"
     "  <tab>/<space> to change focus between local computer and android device\n"
     "  <escape>/<ctrl-c> to exit program\n"
+    "  typing letters works as a filter on the current directory, for faster navigation\n"
     "\n")
     )
 
@@ -37,10 +38,10 @@ def main():
         try:
             application = App()
             ui.run(application.start)
-            print('Quiting')
+            print('Exiting')
 
         except KeyboardInterrupt:
-            print('Quiting')
+            print('Exiting')
 
         except ADBError as e:
             print('Adb error: {}'.format(e))
