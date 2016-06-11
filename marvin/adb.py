@@ -20,6 +20,7 @@ class ADB(FileManager):
     """ADB communicates with the file system on an android device"""
 
     def __init__(self):
+        """Setup, connection with android device"""
         command = ['adb', 'devices']
         output = check_output(command).decode('utf-8')
         output_list = output.split('\n')
@@ -33,7 +34,7 @@ class ADB(FileManager):
         self._get_current_folder_content()
         self.filterer = ContentFilterer()
 
-    def is_device_connected(self):
+    def _is_device_connected(self):
         """Check if a device is connected"""
 
         command = ['adb', 'devices']
@@ -43,7 +44,9 @@ class ADB(FileManager):
             raise ADBError('Device was disconnected')
 
     def _get_current_folder_content(self):
-        self.is_device_connected()
+        """Get all files and folders in the current folder"""
+        
+        self._is_device_connected()
         command = ['adb', 'shell', 'cd "{}" && ls -a'.format(self.current_path)]
         output = check_output(command).decode('utf-8')
         output_list = output.split('\r\n')
@@ -60,7 +63,7 @@ class ADB(FileManager):
         Return True is successful, otherwise, False
         """
 
-        self.is_device_connected()
+        self._is_device_connected()
 
         selected_folder = self.folder_content[self.position]
 
@@ -81,7 +84,7 @@ class ADB(FileManager):
         Return True is successful, otherwise, False
         """
 
-        self.is_device_connected()
+        self._is_device_connected()
         if (path.normpath(self.current_path) != SDCARD_PATH):
             self.current_path = path.dirname(self.current_path)
             self._get_current_folder_content()
@@ -94,7 +97,7 @@ class ADB(FileManager):
     def push(self, file, output_printer):
         """Transfer given file from local device to the current folder of the android device"""
 
-        self.is_device_connected()
+        self._is_device_connected()
         if self.path_exist(path.join(self.current_path, path.basename(file))):
             output_printer('Transfer failed: filename already exist')
         else:
@@ -112,7 +115,7 @@ class ADB(FileManager):
     def pull(self, directory, output_printer):
         """Transfer current file from android device to the given directory on local device"""
 
-        self.is_device_connected()
+        self._is_device_connected()
         try:
             if path.exists(path.join(directory, self.current_file())):
                 output_printer('Transfer failed: filename already exist')
@@ -148,7 +151,7 @@ class ADB(FileManager):
     def path_exist(self, path):
         """Checks if the given path exist on the android device"""
 
-        self.is_device_connected()
+        self._is_device_connected()
         confirmation_string = ': No such file or directory'
         command = ['adb', 'shell', 'cd "{}" && ls "{}"'
                   .format(self.current_path, path)]
@@ -161,7 +164,7 @@ class ADB(FileManager):
     def is_folder(self, path):
         """Checks if current file on android device is a directory"""
 
-        self.is_device_connected()
+        self._is_device_connected()
         confirmation_string = 'not a file 356896741'
         command = ['adb', 'shell', 'cd {} && [ -d "{}" ] && echo "{}"'
                   .format(self.current_path, path, confirmation_string)]
@@ -172,7 +175,7 @@ class ADB(FileManager):
             return False
 
     def delete(self):
-        """Delete current file on android device"""
+        """Delete current file on android device (not implemented)"""
 
 
 
@@ -196,6 +199,7 @@ def execute(command):
 
 
 def _remove_newlines(string):
+    """Remove all instanzes of \\n and \\r"""
     return string.replace('\n', '').replace('\r', '')
 
 

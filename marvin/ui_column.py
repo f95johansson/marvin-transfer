@@ -30,7 +30,8 @@ class UIColumn:
     def refresh(self, y, x, min_row, min_col, max_row, max_col):
         if self.window.is_wintouched():
             try:
-                self.window.refresh(y+self.scrolled, x, min_row, min_col, max_row, max_col)
+                self.window.refresh(y+self.scrolled, x, min_row, 
+                                    min_col, max_row, max_col)
             except curses.error:
                 """This error occur when resizing terminal window in both
                 width and height in a fast motion.

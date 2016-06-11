@@ -2,13 +2,13 @@
 
 ### TODO
 
+* Add help instructions √
 * Detect when disconnected √
 * In list put folders on top (with some distinction)
 * Handle resize √
 * Add delete option (start with files only)
 * Add title bar √
 * Update file list regularly
-* Documentation
 * Fast navigation with letters √
 * Add option for invisible files/folders
 * Visually show cutoffs (of file names etc.)
