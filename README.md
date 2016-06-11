@@ -62,7 +62,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 * [ ] Update file list regularly
 * [X] Fast navigation with letters
 * [ ] Add option for invisible files/folders
-* [ ] Visually show cutoffs (of file names 
+* [ ] Visually show cutoffs (of file names etc.)
 * [ ] Remove requirement for adb in $PATH
 * [ ] Add permanent configuration for stuff like invisible files and adb path
 * [ ] Add package to PyPi for even easier installation
@@ -77,7 +77,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 ## License
 Fredrik Johansson © 2016 ([fredrik-johansson.com](http://fredrik-johansson.com)).
 
-This software is licensed under GNU GPL v3, see file LICENSE for more details.
+This software is licensed under GNU GPL v3, see file LICENSE for more details.  
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
 
 ## Change log
