@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='marvin-transfer',
-    version='0.1.0',
+    version='0.2',
     author='Fredrik Johansson',
     author_email='f95johansson@gmail.com',
     packages=['marvin'],
@@ -18,6 +18,6 @@ setup(
     description='Command line utility for easy transfer between local computer and android device.',
     long_description=open('README.md').read(),
     classifiers=[
-        'Programming Language :: Python :: 3 :: Only'
+        'Programming Language :: Python :: 3'
     ],
 )

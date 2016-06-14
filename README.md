@@ -8,26 +8,29 @@ Especially on mac transferring files to an android device can be a hassle. The A
 
 ## Install
 ### Requirements
-* So far only **Python 3.3 or higher** is supported but the idea is to expand this support to Python 2.7  
+* Recommended **Python 3.3 or higher** for full character support (utf-8)
+* Also works with **Python 2.7** but only with basic ascii support, future support is not guaranteed
 * This utility uses the **ADB (Android Device Bridge)** as a backend and therefor it must be installed and adb must exist in the $PATH  
 
-*(Tested on python3.3/3.5 on OSX 10.9 with Nexus 5/9 on Android Marshmallow)*
+*(Tested on python3.5/3.3/2.7 on OSX 10.9 with Nexus 5/9 on Android Marshmallow)*
 
 
 ### Clone repository
 Clone or download the repository
 
-    git clone https://github.com/richrd/suplemon.git
+    git clone https://github.com/f95johansson/marvin-transfer.git
 
 Then you can **try it out** by simply 
 
     cd marvin-transfer
-    ./marvin.py
+    python3 marvin.py
 
 **Install** it using python3
 
     cd marvin-transfer
     pip3 install .
+
+Use `pip` instead of `pip3` if using python2.7
 
 After system wide install, start the application anywhere with
 
@@ -37,6 +40,8 @@ After system wide install, start the application anywhere with
 I you decide that you want to uninstall it *(if you installed it with pip3)*
 
     pip3 uninstall marvin-transfer
+
+Again, `pip` instead of `pip3` if using python2.7
 
 
 
@@ -66,12 +71,11 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 * [ ] Remove requirement for adb in $PATH
 * [ ] Add permanent configuration for stuff like invisible files and adb path
 * [ ] Add package to PyPi for even easier installation
-* [ ] \(Support python 2.7\)
-    * [ ] Bunch of unicode fixes
-        * [ ] declare utf-8 in all files
-        * [ ] curses get_wchr() not supported (non-ascii entry)
+* [X] \(Support python 2.7\)
+    * [X] Bunch of unicode fixes
+        * [X] declare utf-8 in all files
+        * [X] curses get_wchr() not supported (non-ascii entry)
         * [ ] fix all bytestring.encode('utf-8')
-    * [ ] in ui.py, ~line 36, ceil/float seems to return floats (?)
 
 
 ## License
@@ -81,5 +85,8 @@ This software is licensed under GNU GPL v3, see file LICENSE for more details.
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
 
 ## Change log
+2016-15-06
+> Support for python 2.7 (only ascii)
+
 2016-11-06
 >  Initial release
