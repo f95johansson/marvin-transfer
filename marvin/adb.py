@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 adb contains the appropiet functionallity to use the adb (Android device bride)
 command to communicate with a android device, on a file system level
@@ -97,30 +98,12 @@ class ADB(FileManager):
     def push(self, file, output_printer):
         """Transfer given file from local device to the current folder of the android device"""
 
-        self._is_device_connected()
-        if self.path_exist(path.join(self.current_path, path.basename(file))):
-            output_printer('Transfer failed: filename already exist')
-        else:
-            command = ['adb', 'push', '-p', file, self.current_path]
-            try:
-                for output in execute(command):
-                    output_printer(_remove_newlines(output))
-                output_printer('Transfer success ({})'.format(_remove_newlines(output)))
-            except KeyboardInterrupt:
-                output_printer('Transfer canceled')
-            except subprocess.CalledProcessError:
-                output_printer('Transfer failed: {}'.format(_remove_newlines(output)))
-            self._get_current_folder_content()
-
-    def pull(self, directory, output_printer):
-        """Transfer current file from android device to the given directory on local device"""
-
-        self._is_device_connected()
         try:
-            if path.exists(path.join(directory, self.current_file())):
+            self._is_device_connected()
+            if self.path_exist(path.join(self.current_path, path.basename(file))):
                 output_printer('Transfer failed: filename already exist')
             else:
-                command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
+                command = ['adb', 'push', '-p', file, self.current_path]
                 try:
                     for output in execute(command):
                         output_printer(_remove_newlines(output))
@@ -129,9 +112,36 @@ class ADB(FileManager):
                     output_printer('Transfer canceled')
                 except subprocess.CalledProcessError:
                     output_printer('Transfer failed: {}'.format(_remove_newlines(output)))
+                self._get_current_folder_content()
 
-        except LookupError: # for self.current_file()
-            output_printer('No file selected to transfer')
+        except UnicodeDecodeError:
+            output_printer('Sorry, non-ascii chatacters not supported')
+
+    def pull(self, directory, output_printer):
+        """Transfer current file from android device to the given directory on local device"""
+
+        try:
+            self._is_device_connected()
+            try:
+                if path.exists(path.join(directory, self.current_file())):
+                    output_printer('Transfer failed: filename already exist')
+                else:
+                    command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
+                    try:
+                        for output in execute(command):
+                            output_printer(_remove_newlines(output))
+                        output_printer('Transfer success ({})'.format(_remove_newlines(output)))
+                    except KeyboardInterrupt:
+                        output_printer('Transfer canceled')
+                    except subprocess.CalledProcessError:
+                        output_printer('Transfer failed: {}'.format(_remove_newlines(output)))
+
+            except LookupError: # for self.current_file()
+                output_printer('No file selected to transfer')
+
+        except UnicodeDecodeError:
+            output_printer('Sorry, non-ascii chatacters not supported')
+
 
     def get_device_name(self):
         """Return the model of the android device"""

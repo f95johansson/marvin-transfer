@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Takes care of the ui of the application"""
 
 import curses
@@ -53,8 +54,8 @@ class UI:
         curses.use_default_colors() # take colors from terminal
         curses.curs_set(0) # hide cursor
         (self.height, self.width) = self.window.getmaxyx()
-        self.left_column = UIColumn(curses.newpad(self.height-3, floor((self.width-3)/2)))
-        self.right_column = UIColumn(curses.newpad(self.height-3, ceil((self.width-3)/2)))
+        self.left_column = UIColumn(curses.newpad(self.height-3, int(floor((self.width-3)/2))))
+        self.right_column = UIColumn(curses.newpad(self.height-3, int(ceil((self.width-3)/2))))
         self.clear()
 
         self.left_title = ''
@@ -77,55 +78,60 @@ class UI:
 
             try:
                 event = self.window.get_wch() # blocking
+            except AttributeError:
+                event = self.get_wch_compatibility_layer()
             except curses.error:
                 event = None
 
 
-            try:
-                if event == curses.KEY_RESIZE:
-                    self.resize()
-                    self.event_listeners[UI.event.RESIZE](self.width, self.height)
+            #try:
+            if event == -1:
+                pass
 
-                elif event == curses.KEY_UP:
-                    self.event_listeners[UI.event.UP]()
+            elif event == curses.KEY_RESIZE:
+                self.resize()
+                self.event_listeners[UI.event.RESIZE](self.width, self.height)
 
-                elif event == curses.KEY_DOWN:
-                    self.event_listeners[UI.event.DOWN]()
+            elif event == curses.KEY_UP:
+                self.event_listeners[UI.event.UP]()
 
-                elif event == curses.KEY_LEFT:
-                    self.event_listeners[UI.event.LEFT]()
+            elif event == curses.KEY_DOWN:
+                self.event_listeners[UI.event.DOWN]()
 
-                elif event == curses.KEY_RIGHT:
-                    self.event_listeners[UI.event.RIGHT]()
+            elif event == curses.KEY_LEFT:
+                self.event_listeners[UI.event.LEFT]()
 
-                elif event == curses.KEY_ENTER or event == '\n' or event == '\r':
-                    self.event_listeners[UI.event.ENTER]()
+            elif event == curses.KEY_RIGHT:
+                self.event_listeners[UI.event.RIGHT]()
 
-                elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
-                        or (type(event) == str and (ord(event) == 8 or ord(event) == 127)):
-                    self.event_listeners[UI.event.BACKSPACE]()
+            elif event == curses.KEY_ENTER or event == '\n' or event == '\r':
+                self.event_listeners[UI.event.ENTER]()
 
-                elif event == '\t':
-                    self.event_listeners[UI.event.TAB]()
+            elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
+                    or (type(event) == str and (ord(event) == 8 or ord(event) == 127)):
+                self.event_listeners[UI.event.BACKSPACE]()
 
-                elif event == ' ':
-                    self.event_listeners[UI.event.SPACE]()
+            elif event == '\t':
+                self.event_listeners[UI.event.TAB]()
 
-                elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
-                    self.window.nodelay(True)
-                    c = self.window.getch()
-                    if c == -1 or c == 27: # Esc
-                        self.event_listeners[UI.event.ESCAPE]()
-                    else: # Alt
-                        pass
-                    self.window.nodelay(False)
+            elif event == ' ':
+                self.event_listeners[UI.event.SPACE]()
 
-                elif type(event) == str: # Assumes letter
-                    self.event_listeners[UI.event.LETTER](event)
+            elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
+                self.window.nodelay(True)
+                c = self.window.getch()
+                if c == -1 or c == 27: # Esc
+                    self.event_listeners[UI.event.ESCAPE]()
+                else: # Alt
+                    pass
+                self.window.nodelay(False)
+
+            elif type(event) == str: # Assumes letter
+                self.event_listeners[UI.event.LETTER](event)
 
 
-            except curses.error:
-                raise UIError('Invalid UI operation')
+            #except curses.error:
+            #    raise UIError('Invalid UI operation')
 
 
     def quit(self):
@@ -184,4 +190,32 @@ class UI:
         self.right_column.resize(self.height-3, ceil((self.width-3)/2))
         self.window.vline(1, self.left_column.width, '|', self.height-2)
         self._update_title_bar()
+
+    def get_wch_compatibility_layer(self):
+        """Support curses.get_wch() in older python versions (<3.3)"""
+        ch = self.window.getch()
+        if ch > 256 or ch == -1:
+            return ch
+
+        self.window.nodelay(True)
+
+        w_ch_list = [chr(ch)]
+        while True:
+            ch = self.window.getch()
+            if ch == -1:
+                break
+            elif ch > 256:
+                self.window.ungetch(ch)
+                break
+            else:
+                w_ch_list.append(chr(ch))
+
+        self.window.nodelay(False)
+
+        w_ch = ''.join(w_ch_list)
+
+        return -1 if len(w_ch_list) > 1 else w_ch_list[0]
+
+
+
 

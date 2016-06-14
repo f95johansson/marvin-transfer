@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 from distutils.core import setup
 
@@ -15,5 +16,8 @@ setup(
     url='https://github.com/f95johansson/marvin-transfer',
     license='LICENSE',
     description='Command line utility for easy transfer between local computer and android device.',
-    long_description=open('README.md').read()
+    long_description=open('README.md').read(),
+    classifiers=[
+        'Programming Language :: Python :: 3 :: Only'
+    ],
 )

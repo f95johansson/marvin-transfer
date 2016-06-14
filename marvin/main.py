@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """main takes care of the upstart of the program"""
 
 import sys
@@ -5,6 +6,9 @@ import sys
 from marvin import ui
 from marvin.app import App
 from marvin.adb import ADBError
+
+import locale # for python 2.7, to set encoding to utf-8
+locale.setlocale(locale.LC_ALL, '')
 
 def parser():
     """Parse all the arguments given from command line"""
@@ -25,8 +29,7 @@ def print_help():
     "  Use arrow keys to navigate (right/left to enter/exit folders)\n"
     "  <enter> to transfer currently selected file/foder\n"
     "  <tab>/<space> to change focus between local computer and android device\n"
-    "  <escape>/<ctrl-c> to exit program\n"
-    "  typing letters works as a filter on the current directory, for faster navigation\n"
+    "  <escape>/<ctrl-c> to exit program\n""  typing letters works as a filter on the current directory, for faster navigation\n"
     "\n")
     )
 
@@ -43,6 +46,8 @@ def main():
         except KeyboardInterrupt:
             print('Exiting')
 
+        """
+
         except ADBError as e:
             print('Adb error: {}'.format(e))
 
@@ -51,3 +56,9 @@ def main():
 
         except Exception as e:
             print('Unexpected error occurd: {}'.format(e));
+
+        """
+
+
+if __name__ == '__main__':
+    main()

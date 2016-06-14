@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Contains App class which runs the whole application"""
 
 from marvin.ui import UI

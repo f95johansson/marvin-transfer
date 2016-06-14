@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 file_manager contains the appropiet functionallity to to
 communicate with the local file system
