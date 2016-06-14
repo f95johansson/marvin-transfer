@@ -84,54 +84,54 @@ class UI:
                 event = None
 
 
-            #try:
-            if event == -1:
-                pass
-
-            elif event == curses.KEY_RESIZE:
-                self.resize()
-                self.event_listeners[UI.event.RESIZE](self.width, self.height)
-
-            elif event == curses.KEY_UP:
-                self.event_listeners[UI.event.UP]()
-
-            elif event == curses.KEY_DOWN:
-                self.event_listeners[UI.event.DOWN]()
-
-            elif event == curses.KEY_LEFT:
-                self.event_listeners[UI.event.LEFT]()
-
-            elif event == curses.KEY_RIGHT:
-                self.event_listeners[UI.event.RIGHT]()
-
-            elif event == curses.KEY_ENTER or event == '\n' or event == '\r':
-                self.event_listeners[UI.event.ENTER]()
-
-            elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
-                    or (type(event) == str and (ord(event) == 8 or ord(event) == 127)):
-                self.event_listeners[UI.event.BACKSPACE]()
-
-            elif event == '\t':
-                self.event_listeners[UI.event.TAB]()
-
-            elif event == ' ':
-                self.event_listeners[UI.event.SPACE]()
-
-            elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
-                self.window.nodelay(True)
-                c = self.window.getch()
-                if c == -1 or c == 27: # Esc
-                    self.event_listeners[UI.event.ESCAPE]()
-                else: # Alt
+            try:
+                if event == -1:
                     pass
-                self.window.nodelay(False)
 
-            elif type(event) == str: # Assumes letter
-                self.event_listeners[UI.event.LETTER](event)
+                elif event == curses.KEY_RESIZE:
+                    self.resize()
+                    self.event_listeners[UI.event.RESIZE](self.width, self.height)
+
+                elif event == curses.KEY_UP:
+                    self.event_listeners[UI.event.UP]()
+
+                elif event == curses.KEY_DOWN:
+                    self.event_listeners[UI.event.DOWN]()
+
+                elif event == curses.KEY_LEFT:
+                    self.event_listeners[UI.event.LEFT]()
+
+                elif event == curses.KEY_RIGHT:
+                    self.event_listeners[UI.event.RIGHT]()
+
+                elif event == curses.KEY_ENTER or event == '\n' or event == '\r':
+                    self.event_listeners[UI.event.ENTER]()
+
+                elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
+                        or (type(event) == str and (ord(event) == 8 or ord(event) == 127)):
+                    self.event_listeners[UI.event.BACKSPACE]()
+
+                elif event == '\t':
+                    self.event_listeners[UI.event.TAB]()
+
+                elif event == ' ':
+                    self.event_listeners[UI.event.SPACE]()
+
+                elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
+                    self.window.nodelay(True)
+                    c = self.window.getch()
+                    if c == -1 or c == 27: # Esc
+                        self.event_listeners[UI.event.ESCAPE]()
+                    else: # Alt
+                        pass
+                    self.window.nodelay(False)
+
+                elif type(event) == str: # Assumes letter
+                    self.event_listeners[UI.event.LETTER](event)
 
 
-            #except curses.error:
-            #    raise UIError('Invalid UI operation')
+            except curses.error:
+                raise UIError('Invalid UI operation')
 
 
     def quit(self):

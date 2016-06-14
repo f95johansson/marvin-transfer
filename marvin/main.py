@@ -46,8 +46,6 @@ def main():
         except KeyboardInterrupt:
             print('Exiting')
 
-        """
-
         except ADBError as e:
             print('Adb error: {}'.format(e))
 
@@ -57,7 +55,6 @@ def main():
         except Exception as e:
             print('Unexpected error occurd: {}'.format(e));
 
-        """
 
 
 if __name__ == '__main__':
