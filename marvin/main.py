@@ -7,7 +7,7 @@ from marvin import ui
 from marvin.app import App
 from marvin.adb import ADBError
 
-import locale # for python 2.7, to set encoding to utf-8
+import locale # for python 2.7, to set encoding to utf-8 in curses
 locale.setlocale(locale.LC_ALL, '')
 
 def parser():
@@ -22,7 +22,7 @@ def parser():
 def print_help():
     """Print instructions on how to use this program"""
     print(
-    ("Marvin transfer 0.1.0\n"
+    ("Marvin transfer 0.2\n"
     "To easily transfer file and folder between android device and computer\n"
     "\n"
     "Usage:\n"

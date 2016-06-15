@@ -13,6 +13,6 @@ Help:
   <escape>/<ctrl-c> to exit program
   typing letters works as a filter on the current directory, for faster navigation
 
-by Fredrik Johansson © 2016
+Copyright (c) 2016 Fredrik Johansson
 
 """

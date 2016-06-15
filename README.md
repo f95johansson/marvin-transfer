@@ -81,7 +81,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 
 
 ## License
-Fredrik Johansson © 2016 ([fredrik-johansson.com](http://fredrik-johansson.com)).
+Copyright © 2016 Fredrik Johansson ([fredrik-johansson.com](http://fredrik-johansson.com)).
 
 This software is licensed under GNU GPL v3, see file LICENSE for more details.  
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
