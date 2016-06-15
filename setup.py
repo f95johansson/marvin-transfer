@@ -18,6 +18,7 @@ setup(
     description='Command line utility for easy transfer between local computer and android device.',
     long_description=open('README.md').read(),
     classifiers=[
-        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 2.7'
     ],
 )

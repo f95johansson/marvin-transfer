@@ -50,10 +50,7 @@ def main():
             print('Adb error: {}'.format(e))
 
         except ui.UIError:
-            print('A UI error occurd')
-
-        except Exception as e:
-            print('Unexpected error occurd: {}'.format(e));
+            print('An UI error occurd')
 
 
 

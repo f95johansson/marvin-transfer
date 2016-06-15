@@ -10,6 +10,7 @@ from os import path
 
 from marvin.file_manager import FileManager
 from marvin.content_filterer import ContentFilterer
+from marvin.marked_list import MarkedList
 
 
 SDCARD_PATH = '/storage/emulated/0'
@@ -31,7 +32,7 @@ class ADB(FileManager):
         self.position = 0
         self.position_history = []
         self.current_path = SDCARD_PATH
-        self.folder_content = []
+        self.folder_content = MarkedList()
         self._get_current_folder_content()
         self.filterer = ContentFilterer()
 
@@ -48,15 +49,49 @@ class ADB(FileManager):
         """Get all files and folders in the current folder"""
         
         self._is_device_connected()
-        command = ['adb', 'shell', 'cd "{}" && ls -a'.format(self.current_path)]
+        command = ['adb', 'shell', 'cd "{}" && ls -a -l'.format(self.current_path)]
         output = check_output(command).decode('utf-8')
-        output_list = output.split('\r\n')
+        output_list = self._sort_folders_from_files_in_ls(output)
         try:
             output_list.remove('')
         except:
             pass
 
         self.folder_content = output_list
+
+    def _sort_folders_from_files_in_ls(self, content):
+        directories = MarkedList()
+        files = MarkedList()
+
+        is_directory = False
+        is_file = False
+        line_index = 0
+        name = ''
+        for char in content:
+            if line_index == 0:
+                if char == '\n' or char == '\r':
+                    continue
+                elif char == 'd':
+                    is_directory = True
+                elif char == '-':
+                    is_file = True
+
+            if char == '\n' or char == '\r':
+                if is_directory:
+                    directories.append(name, marked=True)
+                elif is_file:
+                    files.append(name)
+                line_index = 0
+                is_directory = False
+                is_file = False
+                name = ''
+            elif line_index > 55:
+                name += char
+            else:
+                line_index += 1
+
+        directories.extend(files)
+        return directories
 
     def cd_in(self):
         """Change directory into the currently selected on
@@ -66,7 +101,11 @@ class ADB(FileManager):
 
         self._is_device_connected()
 
-        selected_folder = self.folder_content[self.position]
+        try:
+            selected_folder = self.folder_content[self.position]
+        except IndexError:
+            return False
+
 
         if len(self.folder_content) > self.position and \
                 self.is_folder(selected_folder):

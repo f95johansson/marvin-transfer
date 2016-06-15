@@ -6,6 +6,7 @@ communicate with the local file system
 
 import os
 from marvin.content_filterer import ContentFilterer
+from marvin.marked_list import MarkedList
 
 class FileManager:
     """Communicates with the local file system"""
@@ -25,7 +26,18 @@ class FileManager:
     def _get_current_folder_content(self):
         """Get all files and folders in the current folder"""
 
-        self.folder_content = os.listdir(self.current_path)
+        dir_content = os.listdir(self.current_path)
+        directories = MarkedList()
+        files = MarkedList()
+        for content in dir_content:
+            content_path = os.path.join(self.current_path, content)
+            if os.path.isdir(content_path):
+                directories.append(content, marked=True)
+            elif os.path.isfile(content_path):
+                files.append(content)
+
+        directories.extend(files)
+        self.folder_content = directories
         return self.folder_content
 
     def get_current_path(self):
@@ -69,7 +81,7 @@ class FileManager:
         next_path = os.path.join(self.current_path, selected_folder)
         if os.path.isdir(next_path):
             self.current_path = next_path
-            self.folder_content = os.listdir(self.current_path)
+            self._get_current_folder_content()
             self.position_history.append(self.position)
             self.reset_position()
             self.filterer.clear_content()
@@ -82,7 +94,7 @@ class FileManager:
         Return True if successful, otherwise False
         """
         self.current_path = os.path.dirname(self.current_path)
-        self.folder_content = os.listdir(self.current_path)
+        self._get_current_folder_content()
         try:
             self.position = self.position_history.pop()
         except IndexError:

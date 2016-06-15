@@ -63,6 +63,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 * [ ] In list put folders on top (with some distinction)
 * [X] Handle resize
 * [ ] Add delete option (start with files only)
+* [ ] Add make directory option
 * [X] Add title bar
 * [ ] Update file list regularly
 * [X] Fast navigation with letters
@@ -71,11 +72,12 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 * [ ] Remove requirement for adb in $PATH
 * [ ] Add permanent configuration for stuff like invisible files and adb path
 * [ ] Add package to PyPi for even easier installation
-* [X] \(Support python 2.7\)
+* [X] Support python 2.7
     * [X] Bunch of unicode fixes
         * [X] declare utf-8 in all files
         * [X] curses get_wchr() not supported (non-ascii entry)
         * [ ] fix all bytestring.encode('utf-8')
+* [ ] Extend python 2.7 support beyond ascii (if possible)
 
 
 ## License

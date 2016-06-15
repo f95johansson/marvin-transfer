@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from marvin.marked_list import MarkedList
+
 class IllegalArgumentError(ValueError):
     pass
 
@@ -30,14 +32,25 @@ class ContentFilterer:
         current_content = self._content_history[len(self._content_history)-1]
         letters = self._filter_letters + letter
         letters_length = len(letters)
-        result = []
-        for entry in current_content:
+        result = MarkedList()
+        for i, entry in enumerate(current_content):
+            insert = False
             if self.case_sensitive:
                 if entry[:letters_length] == letters:
-                    result.append(entry)
+                    insert = True
             else:
                 if entry[:letters_length].lower() == letters.lower():
-                    result.append(entry)
+                    insert = True
+
+            if insert:
+                marked = False
+                try:
+                    if current_content.is_marked(i):
+                        marked = True
+                except AttributeError:
+                    pass # marked = False
+                result.append(entry, marked=marked)
+
         self._content_history.append(result)
         self._filter_letters += letter
         return result

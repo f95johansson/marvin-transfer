@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import curses
+from marvin.marked_list import MarkedList
 
 class UIColumn:
 
     def __init__(self, window):
         self.window = window
         (self.height, self.width) = self.window.getmaxyx()
-        self.content = []
+        self.content = MarkedList()
         self.marked_positions = set()
         self.focused = False
         self.scrolled = 0
@@ -51,7 +52,13 @@ class UIColumn:
                 else:
                     self.window.addstr(i, 0, value[:self.width-1], curses.A_UNDERLINE)
             else:
-                self.window.addstr(i, 0, value[:self.width-1])
+                try:
+                    if self.content.is_marked(i):
+                        self.window.addstr(i, 0, value[:self.width-1], curses.A_BOLD)
+                    else:
+                        self.window.addstr(i, 0, value[:self.width-1])
+                except AttributeError:
+                    self.window.addstr(i, 0, value[:self.width-1])
 
     def clear(self):
         self.window.erase()
@@ -87,7 +94,13 @@ class UIColumn:
 
     def _remove_background(self, index):
         string = self.content[index][:self.width-1]
-        self.window.addstr(index, 0, string)
+        try:
+            if self.content.is_marked(index):
+                self._add_bold(index)
+            else:
+                self.window.addstr(index, 0, string)
+        except AttributeError:
+            self.window.addstr(index, 0, string)
 
     def focus(self):
         self.focused = True
