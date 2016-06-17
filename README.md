@@ -67,10 +67,10 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 * [X] Add title bar
 * [ ] Update file list regularly
 * [X] Fast navigation with letters
-* [ ] Add option for invisible files/folders
+* [X] Add option for invisible files/folders
 * [ ] Visually show cutoffs (of file names etc.)
-* [ ] Remove requirement for adb in $PATH
-* [ ] Add permanent configuration for stuff like invisible files and adb path
+* [X] Remove requirement for adb in $PATH
+* [X] Add permanent configuration for stuff like invisible files and adb path
 * [ ] Add package to PyPi for even easier installation
 * [X] Support python 2.7
     * [X] Bunch of unicode fixes
@@ -87,6 +87,9 @@ This software is licensed under GNU GPL v3, see file LICENSE for more details.
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
 
 ## Change log
+2016-17-06
+> Added settings through arguments
+
 2016-15-06
 > Support for python 2.7 (only ascii)
 
