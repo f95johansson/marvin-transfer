@@ -46,10 +46,10 @@ Again, `pip` instead of `pip3` if using python2.7
 
 
 ## Usage
-The ui consist of two columns, the left one your local computers file system, the right you connected android device's system
+The ui consist of two columns, the left one your local computers file system, the right your connected android device's system
 
 * use **arrow keys** to navigate (right/left to enter/exit folders)
-* **enter** to transfer currently selected file/foder
+* **enter** to transfer currently selected file/folder
 * **tab/space** to change focus between local computer and android device
 * **escape/ctrl-c** to exit program
 * typing letters works as a filter on the current directory, for faster navigation
@@ -94,6 +94,9 @@ This software is licensed under GNU GPL v3, see file LICENSE for more details.
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
 
 ## Change log
+2016-17-06
+> Update file list regularly (concurrently)
+
 2016-17-06
 > Added settings through arguments
 

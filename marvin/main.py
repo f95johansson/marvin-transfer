@@ -75,12 +75,12 @@ def parser(config):
 def print_help():
     """Print instructions on how to use this program"""
     print(
-    ("Marvin transfer 0.3.0\n"
+    ("Marvin transfer 0.4.0\n"
     "To easily transfer file and folder between android device and computer\n"
     "\n"
     "UI Usage:\n"
     "  Use arrow keys to navigate (right/left to enter/exit folders)\n"
-    "  <enter> to transfer currently selected file/foder\n"
+    "  <enter> to transfer currently selected file/folder\n"
     "  <tab>/<space> to change focus between local computer and android device\n"
     "  <escape>/<ctrl-c> to exit program\n""  typing letters works as a filter on the current directory, for faster navigation\n"
     "  <ctrl-t> Show/hide invisible files/folders (remains after shutdown of utility)"

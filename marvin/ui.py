@@ -209,6 +209,7 @@ class UI:
         self._update_title_bar()
 
     def refresh_columns(self):
+        """Force refresh the two columns"""
         self.left_column.window.touchwin()
         self.right_column.window.touchwin()
         self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)

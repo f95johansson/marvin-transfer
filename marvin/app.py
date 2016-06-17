@@ -65,9 +65,11 @@ class App:
 
 
     def stop_update_thread(self):
+        """Will stop update file list thread if not already stopped"""
         self.stop_flag.set()
 
     def _regularly_update_file_list(self):
+        """Meant to be run in own thread with an interval, will update the file lists"""
         self.adb.update_listdir()
         self.fm.update_listdir()
         self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
@@ -181,6 +183,7 @@ class App:
             self.ui.clear_status_bar()
 
     def toggle_invisible(self):
+        """Show/hide invisible files/folders"""
         self.adb.toogle_invisible_files()
         self.fm.toogle_invisible_files()
         self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
@@ -192,6 +195,11 @@ class App:
 
 
 class Interval(threading.Thread):
+    """Will run function in an interval with the time specified, in its own thread
+
+    To stop thread, use event.set() on the event sent in to the constructor
+    """
+
     def __init__(self, event, func, time=1):
         threading.Thread.__init__(self)
         self.stopped = event
@@ -199,5 +207,6 @@ class Interval(threading.Thread):
         self.time = time
 
     def run(self):
+        """Start the thread with .start()"""
         while not self.stopped.wait(self.time):
             self.func()
