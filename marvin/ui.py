@@ -208,6 +208,12 @@ class UI:
         self.window.vline(1, self.left_column.width, '|', self.height-2)
         self._update_title_bar()
 
+    def refresh_columns(self):
+        self.left_column.window.touchwin()
+        self.right_column.window.touchwin()
+        self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)
+        self.right_column.refresh( 0,0, 2,self.left_column.width+2 , self.height-2, self.left_column.width+self.right_column.width)
+
     def get_wch_compatibility_layer(self):
         """Support curses.get_wch() in older python versions (<3.3)"""
         ch = self.window.getch()

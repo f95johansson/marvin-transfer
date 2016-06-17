@@ -27,6 +27,9 @@ class FileManager:
         """Return all content in current directory as a list"""
         return self.folder_content
 
+    def update_listdir(self):
+        self._get_current_folder_content()
+
     def _get_current_folder_content(self):
         """Get all files and folders in the current folder"""
 

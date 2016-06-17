@@ -72,7 +72,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 * [ ] Add delete option (start with files only)
 * [ ] Add make directory option
 * [X] Add title bar
-* [ ] Update file list regularly
+* [X] Update file list regularly
 * [X] Fast navigation with letters
 * [X] Add option for invisible files/folders
 * [ ] Visually show cutoffs (of file names etc.)
@@ -84,7 +84,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
         * [X] declare utf-8 in all files
         * [X] curses get_wchr() not supported (non-ascii entry)
 * [ ] Extend python 2.7 support beyond ascii (if possible)
-* [ ] 
+* [ ] Add transfer queue system, be able to transfer while navigating
 
 
 ## License

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 """Contains App class which runs the whole application"""
 
+import threading
+
 from marvin.ui import UI
 from marvin.file_manager import FileManager
 from marvin.adb import ADB
+
 
 class App:
     """App takes care of all the possible interaction the user have""" 
@@ -52,7 +55,24 @@ class App:
 
         self.ui.set_title_bar('Local', self.adb.get_device_name())
 
+        self.stop_flag = threading.Event()
+        update_thread = Interval(self.stop_flag, self._regularly_update_file_list, time=3)
+        update_thread.start()
+        
         self.ui.run() # blocking
+
+        self.stop_update_thread()
+
+
+    def stop_update_thread(self):
+        self.stop_flag.set()
+
+    def _regularly_update_file_list(self):
+        self.adb.update_listdir()
+        self.fm.update_listdir()
+        self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
+        self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
+        self.ui.refresh_columns()
 
     def update_file_list(self, manager=None, manager_column=None, empty_message='--Empty--'):
         """Update list of file and folders
@@ -136,7 +156,7 @@ class App:
         try:
             if self.focused == self.adb:
                 self.adb.pull(self.fm.get_current_path(), lambda out: self.ui.print_status_bar(out))
-                self.fm._get_current_folder_content() # private, naughty
+                self.fm.update_listdir()
                 self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
             else:
                 self.adb.push(self.fm.focused_path(), lambda out: self.ui.print_status_bar(out))
@@ -171,3 +191,13 @@ class App:
         self.ui.quit()
 
 
+class Interval(threading.Thread):
+    def __init__(self, event, func, time=1):
+        threading.Thread.__init__(self)
+        self.stopped = event
+        self.func = func
+        self.time = time
+
+    def run(self):
+        while not self.stopped.wait(self.time):
+            self.func()
