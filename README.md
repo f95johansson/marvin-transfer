@@ -10,7 +10,7 @@ Especially on mac transferring files to an android device can be a hassle. The A
 ### Requirements
 * Recommended **Python 3.3 or higher** for full character support (utf-8)
 * Also works with **Python 2.7** but only with basic ascii support, future support is not guaranteed
-* This utility uses the **ADB (Android Device Bridge)** as a backend and therefor it must be installed and adb must exist in the $PATH  
+* This utility uses the **ADB (Android Device Bridge)** as a backend and therefor it must be installed and adb must exist in the $PATH or be set with command line argument (see [Settings](#Settings))
 
 *(Tested on python3.5/3.3/2.7 on OSX 10.9 with Nexus 5/9 on Android Marshmallow)*
 
