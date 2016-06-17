@@ -85,9 +85,9 @@ def print_help():
     "  <escape>/<ctrl-c> to exit program\n""  typing letters works as a filter on the current directory, for faster navigation\n"
     "\n"
     "Settings:\n"
-    "  Use these arguments to set preferences whitch will remain after shutdown\n"
+    "  Use these arguments to set preferences which will remain after shutdown\n"
     "  --show-invisible <true/false> - Whether to show invisible files/folders or not\n"
-    "  --sdcard-path <string> - Defaults to /storage/emulated/0, but may be different across android devices\n"
+    "  --sdcard-path <string> - Set path to interval or external storage. Defaults to /storage/emulated/0, but may be different across android devices\n"
     "  --adb-path <string> - If adb is not in $PATH, you can set it manually\n"
     "\n")
     )

@@ -54,6 +54,12 @@ The ui consist of two columns, the left one your local computers file system, th
 * **escape/ctrl-c** to exit program
 * typing letters works as a filter on the current directory, for faster navigation
 
+### Settings
+Use these arguments to set preferences which will remain after shutdown  
+`--show-invisible <true/false>` - Whether to show invisible files/folders or not  
+`--sdcard-path <string>` - Set path to interval or external storage. Defaults to /storage/emulated/0, but may be different across android devices  
+`--adb-path <string>` - If adb is not in \$PATH, you can set it manually  
+*Example:* `marvin --sdcard-path /sdcard/`
 
 ## TODO
 This utility is quite new and there's a bunch left to be done. Feel free to contribute if you want (with *Pull Requests* targeting *master*). 
@@ -69,7 +75,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 * [X] Fast navigation with letters
 * [X] Add option for invisible files/folders
 * [ ] Visually show cutoffs (of file names etc.)
-* [X] Remove requirement for adb in $PATH
+* [X] Remove requirement for adb in \$PATH
 * [X] Add permanent configuration for stuff like invisible files and adb path
 * [ ] Add package to PyPi for even easier installation
 * [X] Support python 2.7
