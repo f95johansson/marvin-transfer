@@ -5,14 +5,18 @@ communicate with the local file system
 """
 
 import os
+if os.name == 'nt':
+    import win32api, win32con
+
 from marvin.content_filterer import ContentFilterer
 from marvin.marked_list import MarkedList
 
 class FileManager:
     """Communicates with the local file system"""
 
-    def __init__(self):
+    def __init__(self, invisible_files=True):
         """Setup connection with local file system"""
+        self.invisible_files = invisible_files
         self.position = 0
         self.position_history = []
         self.current_path = os.getcwd()
@@ -31,6 +35,9 @@ class FileManager:
         files = MarkedList()
         for content in dir_content:
             content_path = os.path.join(self.current_path, content)
+            if not self.invisible_files and is_hidden(content_path):
+                continue
+
             if os.path.isdir(content_path):
                 directories.append(content, marked=True)
             elif os.path.isfile(content_path):
@@ -107,6 +114,16 @@ class FileManager:
         (not implemented)"""
         pass
 
+    def toogle_invisible_files(self, show=None):
+        """Change state on whether to show invisible files and folders or not
+        Will toggle option if argument show is not given, else use what bool show is
+        """
+        if show:
+            self.invisible_files = show
+        else:
+            self.invisible_files = not self.invisible_files
+        self._get_current_folder_content()
+
     def filter(self, letter):
         """Reduce current folder content to those beginning with given letter
         Multiple calls with be additive
@@ -125,3 +142,13 @@ class FileManager:
         """Return all sequential letters used in filter()"""
         return self.filterer.get_current_filter_letters()
 
+
+
+# from: http://stackoverflow.com/questions/7099290/how-to-ignore-hidden-files-using-os-listdir-python
+def is_hidden(path):
+    name = os.path.basename(path)
+    if os.name== 'nt': # windows
+        attribute = win32api.GetFileAttributes(path)
+        return attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM)
+    else:
+        return name.startswith('.') # unix (linux-osx)

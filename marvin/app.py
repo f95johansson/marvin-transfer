@@ -8,10 +8,23 @@ from marvin.adb import ADB
 class App:
     """App takes care of all the possible interaction the user have""" 
 
-    def __init__(self):
+    def __init__(self, config={}):
         """Sets up the file managers for both local and android device"""
-        self.adb = ADB()
-        self.fm = FileManager()
+
+        adb_args = {}
+        fm_args = {}
+        if 'INVISIBLE' in config:
+            adb_args['invisible_files'] = config['INVISIBLE']
+            fm_args['invisible_files'] = config['INVISIBLE']
+        if 'ADB_PATH' in config:
+            adb_args['adb_path'] = config['ADB_PATH']
+        if 'SDCARD_PATH' in config:
+            adb_args['sdcard_path'] = config['SDCARD_PATH']
+            
+        self.adb = ADB(**adb_args)
+        self.fm = FileManager(**fm_args)
+        self.config = config
+
         self.focused = self.fm
         self.focused_column = None
 
@@ -32,6 +45,7 @@ class App:
         self.ui.add_eventlistener(UI.event.ENTER, self.transfer)
         self.ui.add_eventlistener(UI.event.LETTER, self.letter_input)
         self.ui.add_eventlistener(UI.event.BACKSPACE, self.backspace)
+        self.ui.add_eventlistener(UI.event.CTRL_T, self.toggle_invisible)
 
         self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
         self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
@@ -145,6 +159,12 @@ class App:
             self.ui.print_status_bar('Filtering: {}'.format(self.focused.filter_letters()))
         except IndexError:
             self.ui.clear_status_bar()
+
+    def toggle_invisible(self):
+        self.adb.toogle_invisible_files()
+        self.fm.toogle_invisible_files()
+        self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
+        self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
 
     def quit(self):
         """Will application"""

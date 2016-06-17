@@ -13,25 +13,27 @@ from marvin.content_filterer import ContentFilterer
 from marvin.marked_list import MarkedList
 
 
-SDCARD_PATH = '/storage/emulated/0'
-
 class ADBError(Exception):
     """Something has gone wrong while performing a command using adb (Android device bridge)"""
 
 class ADB(FileManager):
     """ADB communicates with the file system on an android device"""
 
-    def __init__(self):
+    def __init__(self, invisible_files=True, adb_path='adb',
+                    sdcard_path='/storage/emulated/0'):
         """Setup, connection with android device"""
-        command = ['adb', 'devices']
+        command = [adb_path, 'devices']
         output = check_output(command).decode('utf-8')
         output_list = output.split('\n')
         if len(output_list) < 4:
             raise ADBError('No device was found')
 
+        self.invisible_files = invisible_files
+        self.adb_path = adb_path
+        self.sdcard_path = sdcard_path
         self.position = 0
         self.position_history = []
-        self.current_path = SDCARD_PATH
+        self.current_path = self.sdcard_path
         self.folder_content = MarkedList()
         self._get_current_folder_content()
         self.filterer = ContentFilterer()
@@ -39,7 +41,7 @@ class ADB(FileManager):
     def _is_device_connected(self):
         """Check if a device is connected"""
 
-        command = ['adb', 'devices']
+        command = [self.adb_path, 'devices']
         output = check_output(command).decode('utf-8')
         output_list = output.split('\n')
         if len(output_list) < 4:
@@ -49,7 +51,8 @@ class ADB(FileManager):
         """Get all files and folders in the current folder"""
         
         self._is_device_connected()
-        command = ['adb', 'shell', 'cd "{}" && ls -a -l'.format(self.current_path)]
+        invisble_flag = '-a' if self.invisible_files else ''
+        command = [self.adb_path, 'shell', 'cd "{}" && ls {} -l'.format(self.current_path, invisble_flag)]
         output = check_output(command).decode('utf-8')
         output_list = self._sort_folders_from_files_in_ls(output)
         try:
@@ -67,6 +70,8 @@ class ADB(FileManager):
         is_file = False
         line_index = 0
         name = ''
+        # each line is similar to:
+        # drwxrwx--x root     sdcard_rw          2016-04-20 20:26 Music
         for char in content:
             if line_index == 0:
                 if char == '\n' or char == '\r':
@@ -85,7 +90,7 @@ class ADB(FileManager):
                 is_directory = False
                 is_file = False
                 name = ''
-            elif line_index > 55:
+            elif line_index > 55: # where folder/file name begins
                 name += char
             else:
                 line_index += 1
@@ -125,7 +130,7 @@ class ADB(FileManager):
         """
 
         self._is_device_connected()
-        if (path.normpath(self.current_path) != SDCARD_PATH):
+        if (path.normpath(self.current_path) != self.sdcard_path):
             self.current_path = path.dirname(self.current_path)
             self._get_current_folder_content()
             self.position = self.position_history.pop()
@@ -141,8 +146,9 @@ class ADB(FileManager):
             self._is_device_connected()
             if self.path_exist(path.join(self.current_path, path.basename(file))):
                 output_printer('Transfer failed: filename already exist')
+                print('\a') # error noise
             else:
-                command = ['adb', 'push', '-p', file, self.current_path]
+                command = [self.adb_path, 'push', '-p', file, self.current_path]
                 try:
                     for output in execute(command):
                         output_printer(_remove_newlines(output))
@@ -151,10 +157,12 @@ class ADB(FileManager):
                     output_printer('Transfer canceled')
                 except subprocess.CalledProcessError:
                     output_printer('Transfer failed: {}'.format(_remove_newlines(output)))
+                    print('\a')
                 self._get_current_folder_content()
 
         except UnicodeDecodeError:
             output_printer('Sorry, non-ascii chatacters not supported')
+            print('\a')
 
     def pull(self, directory, output_printer):
         """Transfer current file from android device to the given directory on local device"""
@@ -164,8 +172,9 @@ class ADB(FileManager):
             try:
                 if path.exists(path.join(directory, self.current_file())):
                     output_printer('Transfer failed: filename already exist')
+                    print('\a')
                 else:
-                    command = ['adb', 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
+                    command = [self.adb_path, 'pull', '-p', path.join(self.current_path, self.current_file()), directory]
                     try:
                         for output in execute(command):
                             output_printer(_remove_newlines(output))
@@ -174,18 +183,21 @@ class ADB(FileManager):
                         output_printer('Transfer canceled')
                     except subprocess.CalledProcessError:
                         output_printer('Transfer failed: {}'.format(_remove_newlines(output)))
+                        print('\a')
 
             except LookupError: # for self.current_file()
                 output_printer('No file selected to transfer')
+                print('\a')
 
         except UnicodeDecodeError:
             output_printer('Sorry, non-ascii chatacters not supported')
+            print('\a')
 
 
     def get_device_name(self):
         """Return the model of the android device"""
 
-        command = ['adb', 'devices', '-l']
+        command = [self.adb_path, 'devices', '-l']
         output = check_output(command).decode('utf-8')
         output_list = output.split('\n')
         if len(output_list) >= 2:
@@ -202,7 +214,7 @@ class ADB(FileManager):
 
         self._is_device_connected()
         confirmation_string = ': No such file or directory'
-        command = ['adb', 'shell', 'cd "{}" && ls "{}"'
+        command = [self.adb_path, 'shell', 'cd "{}" && ls "{}"'
                   .format(self.current_path, path)]
         output = check_output(command).decode('utf-8').split('\r\n')[0]
         if confirmation_string in output:
@@ -215,7 +227,7 @@ class ADB(FileManager):
 
         self._is_device_connected()
         confirmation_string = 'not a file 356896741'
-        command = ['adb', 'shell', 'cd {} && [ -d "{}" ] && echo "{}"'
+        command = [self.adb_path, 'shell', 'cd {} && [ -d "{}" ] && echo "{}"'
                   .format(self.current_path, path, confirmation_string)]
         output = check_output(command).decode('utf-8').split('\r\n')[0]
         if output == confirmation_string:

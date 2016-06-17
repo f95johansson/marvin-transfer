@@ -11,6 +11,7 @@ class UIColumn:
         self.marked_positions = set()
         self.focused = False
         self.scrolled = 0
+        self.ascii_message = '--Name hidden, only ascii supported--'
 
     def update_content(self, content):
         self.scrolled = 0
@@ -20,7 +21,7 @@ class UIColumn:
         self._draw()
 
     def resize(self, height, width):
-        self.window.resize(self.height, width)
+        self.window.resize(self.height, int(width))
         self.window.touchwin()
         self.scrolled = 0
         (_, self.width) = self.window.getmaxyx()
@@ -48,17 +49,18 @@ class UIColumn:
 
             if i in self.marked_positions:
                 if self.focused:
-                    self.window.addstr(i, 0, value[:self.width-1], curses.A_REVERSE)
+                    self._add_background(i)
                 else:
-                    self.window.addstr(i, 0, value[:self.width-1], curses.A_UNDERLINE)
+                    self._add_underline(i)
             else:
                 try:
                     if self.content.is_marked(i):
-                        self.window.addstr(i, 0, value[:self.width-1], curses.A_BOLD)
+                        self._add_bold(i)
                     else:
-                        self.window.addstr(i, 0, value[:self.width-1])
+                        self._add_string(i)
                 except AttributeError:
-                    self.window.addstr(i, 0, value[:self.width-1])
+                    self._add_string(i)
+
 
     def clear(self):
         self.window.erase()
@@ -80,27 +82,48 @@ class UIColumn:
     def reset_positions(self):
         self.marked_positions.clear()
 
+    def _add_string(self, index):
+        string = self.content[index][:self.width-1]
+        try:
+            self.window.addstr(index, 0, string)
+        except UnicodeEncodeError:
+            self.window.addstr(index, 0, self.ascii_message[:self.width-1])
+
     def _add_background(self, index):
         string = self.content[index][:self.width-1]
-        self.window.addstr(index, 0, string, curses.A_REVERSE)
+        try:
+            self.window.addstr(index, 0, string, curses.A_REVERSE)
+        except UnicodeEncodeError:
+            self.window.addstr(index, 0, self.ascii_message[:self.width-1], curses.A_REVERSE)
 
     def _add_underline(self, index):
         string = self.content[index][:self.width-1]
-        self.window.addstr(index, 0, string, curses.A_UNDERLINE)
+        try:
+            self.window.addstr(index, 0, string, curses.A_UNDERLINE)
+        except UnicodeEncodeError:
+            self.window.addstr(index, 0, self.ascii_message[:self.width-1], curses.A_UNDERLINE)
 
     def _add_bold(self, index):
         string = self.content[index][:self.width-1]
-        self.window.addstr(index, 0, string, curses.A_BOLD)
+        try:
+            self.window.addstr(index, 0, string, curses.A_BOLD)
+        except UnicodeEncodeError:
+            self.window.addstr(index, 0, self.ascii_message[:self.width-1], curses.A_BOLD)
 
     def _remove_background(self, index):
         string = self.content[index][:self.width-1]
         try:
-            if self.content.is_marked(index):
-                self._add_bold(index)
-            else:
+            try:
+                if self.content.is_marked(index):
+                    self._add_bold(index)
+                else:
+                    self.window.addstr(index, 0, string)
+            except AttributeError:
                 self.window.addstr(index, 0, string)
-        except AttributeError:
-            self.window.addstr(index, 0, string)
+
+        except UnicodeEncodeError:
+            self.window.addstr(index, 0, self.ascii_message[:self.width-1])
+
 
     def focus(self):
         self.focused = True

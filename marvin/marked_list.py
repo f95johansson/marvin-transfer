@@ -13,13 +13,13 @@ class MarkedList(list):
         """L.append(object, [marked]) -> None -- append object to end
         marked - boolean (default False)
         """
-        super().append(value)
+        super(MarkedList, self).append(value)
 
         self.__marked_values.append(marked)
 
     # extend
     def extend(self, iterable):
-        super().extend(iterable)
+        super(MarkedList, self).extend(iterable)
 
         if type(iterable) == MarkedList:
             self.__marked_values.extend(iterable.get_all_markings())
@@ -31,19 +31,19 @@ class MarkedList(list):
         """L.insert(index, object [marked]) -- insert object before index
         marked - boolean (default False)
         """
-        super().insert(index, value)
+        super(MarkedList, self).insert(index, value)
         self.__marked_values.insert(index, marked)
 
     # extend
     def pop(self, index=None):
         index = index if index != None else len(self)-1
-        super().pop(index)
+        super(MarkedList, self).pop(index)
         self.__marked_values.pop(index)
 
     # extend
     def remove(self, value):
         self.__marked_values.pop(self.index(value))
-        super().remove(value)
+        super(MarkedList, self).remove(value)
 
 
     def is_marked(self, index):

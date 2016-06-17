@@ -3,6 +3,7 @@
 
 import curses
 import os
+import sys
 from math import floor
 from math import ceil
 
@@ -39,6 +40,7 @@ class Events:
         self.BACKSPACE = 'backspace'
         self.ESCAPE = 'escape'
         self.CTRL_D = 'ctrl_d'
+        self.CTRL_T = 'ctrl_T'
 
 
 class UI:
@@ -68,8 +70,10 @@ class UI:
 
     def run(self):
         """A loop which will fire event listeners based on user input"""
-        self.running = True
+        if sys.version_info[0] < 3:
+            self.print_status_bar('Please upgrade to python3 for non-ascii support')
 
+        self.running = True
         while self.running:
             if self.window.is_wintouched():
                 self.window.refresh()
@@ -83,6 +87,14 @@ class UI:
             except curses.error:
                 event = None
 
+            # Events:
+            #  ctrl-<key> = number of <key> where a=1, b=2, ...
+            #  collisions:
+            #    7 = ctrl-g = bell
+            #    8 = ctrl-h = backspace
+            #    9 = ctrl-i = \t (tab)
+            #   10 = ctrl-j = \n
+            #   13 = ctrl-m = \r
 
             try:
                 if event == -1:
@@ -104,18 +116,24 @@ class UI:
                 elif event == curses.KEY_RIGHT:
                     self.event_listeners[UI.event.RIGHT]()
 
-                elif event == curses.KEY_ENTER or event == '\n' or event == '\r':
+                elif event == curses.KEY_ENTER or event == 10 or event == '\n' or event == '\r':
                     self.event_listeners[UI.event.ENTER]()
 
                 elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
                         or (type(event) == str and (ord(event) == 8 or ord(event) == 127)):
                     self.event_listeners[UI.event.BACKSPACE]()
 
-                elif event == '\t':
+                elif event == 9 or event == '\t':
                     self.event_listeners[UI.event.TAB]()
 
-                elif event == ' ':
+                elif event == 32 or event == ' ':
                     self.event_listeners[UI.event.SPACE]()
+
+                elif event == 4 or (type(event) == str and ord(event) == 4):
+                    self.event_listeners[UI.event.CTRL_D]()
+
+                elif event == 20 or (type(event) == str and ord(event) == 20):
+                    self.event_listeners[UI.event.CTRL_T]()
 
                 elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
                     self.window.nodelay(True)
@@ -128,7 +146,6 @@ class UI:
 
                 elif type(event) == str: # Assumes letter
                     self.event_listeners[UI.event.LETTER](event)
-
 
             except curses.error:
                 raise UIError('Invalid UI operation')
@@ -194,7 +211,7 @@ class UI:
     def get_wch_compatibility_layer(self):
         """Support curses.get_wch() in older python versions (<3.3)"""
         ch = self.window.getch()
-        if ch > 256 or ch == -1:
+        if ch < 32 or ch > 256 or ch == -1:
             return ch
 
         self.window.nodelay(True)

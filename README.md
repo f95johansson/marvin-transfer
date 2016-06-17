@@ -60,7 +60,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 
 * [X] Add help instructions (-h, --help)
 * [X] Detect when disconnected
-* [ ] In list put folders on top (with some distinction)
+* [X] In list put folders on top (with some distinction)
 * [X] Handle resize
 * [ ] Add delete option (start with files only)
 * [ ] Add make directory option
