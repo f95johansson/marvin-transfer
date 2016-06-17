@@ -53,6 +53,7 @@ The ui consist of two columns, the left one your local computers file system, th
 * **tab/space** to change focus between local computer and android device
 * **escape/ctrl-c** to exit program
 * typing letters works as a filter on the current directory, for faster navigation
+* **\<ctrl-t\>** Show/hide invisible files/folders (remains after shutdown of utility)
 
 ### Settings
 Use these arguments to set preferences which will remain after shutdown  
@@ -82,8 +83,8 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
     * [X] Bunch of unicode fixes
         * [X] declare utf-8 in all files
         * [X] curses get_wchr() not supported (non-ascii entry)
-        * [ ] fix all bytestring.encode('utf-8')
 * [ ] Extend python 2.7 support beyond ascii (if possible)
+* [ ] 
 
 
 ## License

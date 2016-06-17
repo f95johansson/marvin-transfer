@@ -83,6 +83,7 @@ def print_help():
     "  <enter> to transfer currently selected file/foder\n"
     "  <tab>/<space> to change focus between local computer and android device\n"
     "  <escape>/<ctrl-c> to exit program\n""  typing letters works as a filter on the current directory, for faster navigation\n"
+    "  <ctrl-t> Show/hide invisible files/folders (remains after shutdown of utility)"
     "\n"
     "Settings:\n"
     "  Use these arguments to set preferences which will remain after shutdown\n"
