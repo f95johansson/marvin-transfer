@@ -75,7 +75,7 @@ def parser(config):
 def print_help():
     """Print instructions on how to use this program"""
     print(
-    ("Marvin transfer 0.4.0\n"
+    ("Marvin transfer 0.4.1\n"
     "To easily transfer file and folder between android device and computer\n"
     "\n"
     "UI Usage:\n"

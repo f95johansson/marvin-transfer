@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Marvin transfer 0.4.0
+Marvin transfer 0.4.1
 
 This program uses adb (Android device bridge) to easy
 the task of transfering file between a computer and an

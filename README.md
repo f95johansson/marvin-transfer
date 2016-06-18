@@ -72,7 +72,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
 * [ ] Add delete option (start with files only)
 * [ ] Add make directory option
 * [X] Add title bar
-* [X] Update file list regularly
+* [ ] Update file list regularly
 * [X] Fast navigation with letters
 * [X] Add option for invisible files/folders
 * [ ] Visually show cutoffs (of file names etc.)
@@ -94,6 +94,10 @@ This software is licensed under GNU GPL v3, see file LICENSE for more details.
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
 
 ## Change log
+2016-18-06 (0.4.1)
+> Disabled concurrent file list update (it was not ready yet)
+> Added permission checks
+
 2016-17-06 (0.4.0)
 > Update file list regularly (concurrently)
 
