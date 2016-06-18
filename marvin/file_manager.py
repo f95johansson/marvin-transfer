@@ -19,6 +19,7 @@ class FileManager:
         self.invisible_files = invisible_files
         self.position = 0
         self.position_history = []
+        self.permission_denied = False
         self.current_path = os.getcwd()
         self._get_current_folder_content()
         self.filterer = ContentFilterer()
@@ -32,22 +33,27 @@ class FileManager:
 
     def _get_current_folder_content(self):
         """Get all files and folders in the current folder"""
+        try:
+            dir_content = os.listdir(self.current_path)
+            self.permission_denied = False
+        except PermissionError:
+            self.folder_content = []
+            self.permission_denied = True
+        else:
+            directories = MarkedList()
+            files = MarkedList()
+            for content in dir_content:
+                content_path = os.path.join(self.current_path, content)
+                if not self.invisible_files and is_hidden(content_path):
+                    continue
 
-        dir_content = os.listdir(self.current_path)
-        directories = MarkedList()
-        files = MarkedList()
-        for content in dir_content:
-            content_path = os.path.join(self.current_path, content)
-            if not self.invisible_files and is_hidden(content_path):
-                continue
+                if os.path.isdir(content_path):
+                    directories.append(content, marked=True)
+                elif os.path.isfile(content_path):
+                    files.append(content)
 
-            if os.path.isdir(content_path):
-                directories.append(content, marked=True)
-            elif os.path.isfile(content_path):
-                files.append(content)
-
-        directories.extend(files)
-        self.folder_content = directories
+            directories.extend(files)
+            self.folder_content = directories
         return self.folder_content
 
     def get_current_path(self):

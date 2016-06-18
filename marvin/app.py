@@ -6,6 +6,7 @@ import threading
 from marvin.ui import UI
 from marvin.file_manager import FileManager
 from marvin.adb import ADB
+from marvin.adb import ADBError
 
 
 class App:
@@ -27,6 +28,8 @@ class App:
         self.adb = ADB(**adb_args)
         self.fm = FileManager(**fm_args)
         self.config = config
+
+        self._update_thread = Interval(self._regularly_update_file_list, time=3)
 
         self.focused = self.fm
         self.focused_column = None
@@ -54,10 +57,8 @@ class App:
         self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
 
         self.ui.set_title_bar('Local', self.adb.get_device_name())
-
-        self.stop_flag = threading.Event()
-        update_thread = Interval(self.stop_flag, self._regularly_update_file_list, time=3)
-        update_thread.start()
+        
+        #self._update_thread.start()
         
         self.ui.run() # blocking
 
@@ -66,11 +67,14 @@ class App:
 
     def stop_update_thread(self):
         """Will stop update file list thread if not already stopped"""
-        self.stop_flag.set()
+        self._update_thread.cancel()
 
     def _regularly_update_file_list(self):
         """Meant to be run in own thread with an interval, will update the file lists"""
-        self.adb.update_listdir()
+        try:
+            self.adb.update_listdir()
+        except ADBError:
+            self.ui.quit()
         self.fm.update_listdir()
         self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
         self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
@@ -86,14 +90,16 @@ class App:
 
         self.ui.clear(manager_column) # must clear & refresh window before resizing pad 
                                       # (done in update_content())
-
-        if len(manager.listdir()) > 0:
+        if manager.permission_denied:
             manager_column.reset_positions()
-            manager_column.update_content(manager.listdir())
-            manager_column.mark_position(manager.get_position())
-        else:
+            manager_column.update_content(['--Permission denied--'])
+        elif len(manager.listdir()) == 0:
             manager_column.reset_positions()
             manager_column.update_content([empty_message])
+        else:
+            manager_column.reset_positions()
+            manager_column.update_content(manager.listdir())
+            manager_column.mark_position(manager.get_position())           
 
     def resize(self, width, height):
         scroll_vs_position = self.focused.get_position() - self.focused_column.scrolled
@@ -200,13 +206,16 @@ class Interval(threading.Thread):
     To stop thread, use event.set() on the event sent in to the constructor
     """
 
-    def __init__(self, event, func, time=1):
+    def __init__(self, func, time=1):
         threading.Thread.__init__(self)
-        self.stopped = event
-        self.func = func
-        self.time = time
+        self._stopped = threading.Event()
+        self._func = func
+        self._time = time
+
+    def cancel(self):
+        self._stopped.set()
 
     def run(self):
         """Start the thread with .start()"""
-        while not self.stopped.wait(self.time):
-            self.func()
+        while not self._stopped.wait(self._time):
+            self._func()

@@ -8,6 +8,7 @@ from math import floor
 from math import ceil
 
 from marvin.ui_column import UIColumn
+from marvin.adb import ADBError
 
 def run(func):
     """Wrapper for a main run function"""
@@ -73,6 +74,8 @@ class UI:
         if sys.version_info[0] < 3:
             self.print_status_bar('Please upgrade to python3 for non-ascii support')
 
+        self.window.timeout(3)
+
         self.running = True
         while self.running:
             if self.window.is_wintouched():
@@ -86,6 +89,9 @@ class UI:
                 event = self.get_wch_compatibility_layer()
             except curses.error:
                 event = None
+
+            if not self.running:
+                break
 
             # Events:
             #  ctrl-<key> = number of <key> where a=1, b=2, ...
@@ -154,6 +160,7 @@ class UI:
     def quit(self):
         """Exits the ui and the run wrapper"""
         self.running = False
+
 
     def clear(self, column=None):
         """Clears the entire window if no column is supplied, otherwise only column"""

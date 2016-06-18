@@ -20,7 +20,7 @@ class ADB(FileManager):
     """ADB communicates with the file system on an android device"""
 
     def __init__(self, invisible_files=True, adb_path='adb',
-                    sdcard_path='/storage/emulated/0'):
+                    sdcard_path='/'):
         """Setup, connection with android device"""
         command = [adb_path, 'devices']
         output = check_output(command).decode('utf-8')
@@ -33,6 +33,7 @@ class ADB(FileManager):
         self.sdcard_path = sdcard_path
         self.position = 0
         self.position_history = []
+        self.permission_denied = False
         self.current_path = self.sdcard_path
         self.folder_content = MarkedList()
         self._get_current_folder_content()
@@ -52,20 +53,51 @@ class ADB(FileManager):
         
         self._is_device_connected()
         invisble_flag = '-a' if self.invisible_files else ''
-        command = [self.adb_path, 'shell', 'cd "{}" && ls {} -l'.format(self.current_path, invisble_flag)]
+        command = [self.adb_path, 'shell', 'ls {} "{}/"'.format(invisble_flag, self.current_path)]
+        command_long = [self.adb_path, 'shell', 'ls {} -l "{}/"'.format(invisble_flag, self.current_path)]
         output = check_output(command).decode('utf-8')
-        output_list = self._sort_folders_from_files_in_ls(output)
+        output_long = check_output(command_long).decode('utf-8')
+
+        if output.endswith('Permission denied\r\n'):
+            self.permission_denied = True
+            self.folder_content = []
+            return
+        else:
+            self.permission_denied = False
+        
+        output_list = self._sort_folders_from_files_in_ls(output, output_long)
         try:
             output_list.remove('')
         except:
             pass
-
         self.folder_content = output_list
 
-    def _sort_folders_from_files_in_ls(self, content):
+    def _sort_folders_from_files_in_ls(self, content, content_long):
         directories = MarkedList()
         files = MarkedList()
 
+        content_list = content.split('\n')
+        content_list_long = content_long.split('\n')
+
+        for i, name in enumerate(content_list):
+            if name.endswith('\r'):
+                name = name[:-1]
+            elif name.startswith('\r'):
+                name = name[1:]
+
+            if name != '':
+                if content_list_long[i].startswith('d'):
+                    directories.append(name, marked=True)
+                elif content_list_long[i].startswith('-'):
+                    files.append(name)
+                elif content_list_long[i].startswith('l'): # symbolic link
+                    if self.is_folder(name):
+                        directories.append(name, marked=True)
+                    else:
+                        files.append(name)
+
+
+        """ old way of doing it (index=55 not reliable)
         is_directory = False
         is_file = False
         line_index = 0
@@ -94,6 +126,7 @@ class ADB(FileManager):
                 name += char
             else:
                 line_index += 1
+        """
 
         directories.extend(files)
         return directories
@@ -112,7 +145,7 @@ class ADB(FileManager):
             return False
 
 
-        if len(self.folder_content) > self.position and \
+        if self.position < len(self.folder_content) and \
                 self.is_folder(selected_folder):
             self.current_path = path.join(self.current_path, selected_folder)
             self._get_current_folder_content()

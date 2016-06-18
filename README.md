@@ -94,14 +94,14 @@ This software is licensed under GNU GPL v3, see file LICENSE for more details.
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
 
 ## Change log
-2016-17-06
+2016-17-06 (0.4.0)
 > Update file list regularly (concurrently)
 
-2016-17-06
+2016-17-06 (0.3.0)
 > Added settings through arguments
 
-2016-15-06
+2016-15-06 (0.2.0)
 > Support for python 2.7 (only ascii)
 
-2016-11-06
+2016-11-06 (0.1.0)
 >  Initial release

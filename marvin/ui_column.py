@@ -88,6 +88,8 @@ class UIColumn:
             self.window.addstr(index, 0, string)
         except UnicodeEncodeError:
             self.window.addstr(index, 0, self.ascii_message[:self.width-1])
+        except curses.error:
+            raise Exception(string)
 
     def _add_background(self, index):
         string = self.content[index][:self.width-1]
