@@ -29,6 +29,7 @@ class Events:
 
     def __init__(self):
         """Setup all the events"""
+        self.REFRESH = 'refresh'
         self.RESIZE = 'resize'
         self.UP = 'up'
         self.DOWN = 'down'
@@ -64,6 +65,8 @@ class UI:
         self.left_title = ''
         self.right_title = ''
 
+        self.refresh_time = 3000 # 3 seconds (see self.refresh_rate())
+
         self.running = False
         self.event_listeners = {}
         for event in vars(UI.event).values():
@@ -74,7 +77,7 @@ class UI:
         if sys.version_info[0] < 3:
             self.print_status_bar('Please upgrade to python3 for non-ascii support')
 
-        self.window.timeout(3)
+        self.window.timeout(self.refresh_time)
 
         self.running = True
         while self.running:
@@ -87,8 +90,8 @@ class UI:
                 event = self.window.get_wch() # blocking
             except AttributeError:
                 event = self.get_wch_compatibility_layer()
-            except curses.error:
-                event = None
+            except curses.error: # no input
+                event = -1
 
             if not self.running:
                 break
@@ -104,7 +107,7 @@ class UI:
 
             try:
                 if event == -1:
-                    pass
+                    self.event_listeners[UI.event.REFRESH]()
 
                 elif event == curses.KEY_RESIZE:
                     self.resize()
@@ -157,6 +160,12 @@ class UI:
                 raise UIError('Invalid UI operation')
 
 
+    def refresh_rate(self, seconds):
+        """Set how often event REFRESH should be triggered
+        Will only trigger in specified number of seconds if no other event is triggered
+        """
+        self.refresh_time = seconds*1000
+
     def quit(self):
         """Exits the ui and the run wrapper"""
         self.running = False
@@ -202,9 +211,10 @@ class UI:
         """Add event listener to an event from specified in Event class"""
         try:
             self.event_listeners[event]
-            self.event_listeners[event] = func
         except KeyError:
             raise IllegalArgumentError('No such event ({})'.format(event))
+        else:
+            self.event_listeners[event] = func
 
     def resize(self):
         """Resize ui and repaint all objects"""
@@ -214,13 +224,6 @@ class UI:
         self.right_column.resize(self.height-3, ceil((self.width-3)/2))
         self.window.vline(1, self.left_column.width, '|', self.height-2)
         self._update_title_bar()
-
-    def refresh_columns(self):
-        """Force refresh the two columns"""
-        self.left_column.window.touchwin()
-        self.right_column.window.touchwin()
-        self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)
-        self.right_column.refresh( 0,0, 2,self.left_column.width+2 , self.height-2, self.left_column.width+self.right_column.width)
 
     def get_wch_compatibility_layer(self):
         """Support curses.get_wch() in older python versions (<3.3)"""

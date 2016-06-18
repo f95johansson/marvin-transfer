@@ -6,7 +6,6 @@ import threading
 from marvin.ui import UI
 from marvin.file_manager import FileManager
 from marvin.adb import ADB
-from marvin.adb import ADBError
 
 
 class App:
@@ -29,8 +28,6 @@ class App:
         self.fm = FileManager(**fm_args)
         self.config = config
 
-        self._update_thread = Interval(self._regularly_update_file_list, time=3)
-
         self.focused = self.fm
         self.focused_column = None
 
@@ -40,6 +37,9 @@ class App:
         self.focused_column = self.ui.left_column
         self.focused_column.focused = True
 
+        self.ui.refresh_rate(2)
+
+        self.ui.add_eventlistener(UI.event.REFRESH, self.refresh_file_lists)
         self.ui.add_eventlistener(UI.event.RESIZE, self.resize)
         self.ui.add_eventlistener(UI.event.UP, self.move_up)
         self.ui.add_eventlistener(UI.event.DOWN, self.move_down)
@@ -58,27 +58,19 @@ class App:
 
         self.ui.set_title_bar('Local', self.adb.get_device_name())
         
-        #self._update_thread.start()
-        
         self.ui.run() # blocking
-
-        self.stop_update_thread()
 
 
     def stop_update_thread(self):
         """Will stop update file list thread if not already stopped"""
         self._update_thread.cancel()
 
-    def _regularly_update_file_list(self):
-        """Meant to be run in own thread with an interval, will update the file lists"""
-        try:
-            self.adb.update_listdir()
-        except ADBError:
-            self.ui.quit()
+    def refresh_file_lists(self):
+        """Refresh content for both file lists"""
+        self.adb.update_listdir()
         self.fm.update_listdir()
         self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
         self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
-        self.ui.refresh_columns()
 
     def update_file_list(self, manager=None, manager_column=None, empty_message='--Empty--'):
         """Update list of file and folders

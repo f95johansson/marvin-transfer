@@ -114,11 +114,6 @@ def main():
         except ui.UIError:
             print('An UI error occurd')
 
-        try:
-            application.stop_update_thread() # make sure all threads are closed
-        except UnboundLocalError:
-            pass # application didn't have time to initialize
-
 
 
 if __name__ == '__main__':

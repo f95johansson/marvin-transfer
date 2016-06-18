@@ -20,7 +20,7 @@ class ADB(FileManager):
     """ADB communicates with the file system on an android device"""
 
     def __init__(self, invisible_files=True, adb_path='adb',
-                    sdcard_path='/'):
+                    sdcard_path='/storage/emulated/0'):
         """Setup, connection with android device"""
         command = [adb_path, 'devices']
         output = check_output(command).decode('utf-8')
@@ -53,10 +53,9 @@ class ADB(FileManager):
         
         self._is_device_connected()
         invisble_flag = '-a' if self.invisible_files else ''
-        command = [self.adb_path, 'shell', 'ls {} "{}/"'.format(invisble_flag, self.current_path)]
-        command_long = [self.adb_path, 'shell', 'ls {} -l "{}/"'.format(invisble_flag, self.current_path)]
+        command = [self.adb_path, 'shell', 'ls {} "{}/" && ls {} -l "{}/"'.format(
+                    invisble_flag, self.current_path, invisble_flag, self.current_path)]
         output = check_output(command).decode('utf-8')
-        output_long = check_output(command_long).decode('utf-8')
 
         if output.endswith('Permission denied\r\n'):
             self.permission_denied = True
@@ -65,68 +64,36 @@ class ADB(FileManager):
         else:
             self.permission_denied = False
         
-        output_list = self._sort_folders_from_files_in_ls(output, output_long)
+        output_list = self._sort_folders_from_files_in_ls(output)
         try:
             output_list.remove('')
         except:
             pass
         self.folder_content = output_list
 
-    def _sort_folders_from_files_in_ls(self, content, content_long):
+    def _sort_folders_from_files_in_ls(self, content):
         directories = MarkedList()
         files = MarkedList()
 
-        content_list = content.split('\n')
-        content_list_long = content_long.split('\n')
+        content_list = content.split('\r\n')
+        if content_list[len(content_list)-1] == '':
+            content_list.pop()
+        length = len(content_list)//2 # content includes both ls and ls -l
 
         for i, name in enumerate(content_list):
-            if name.endswith('\r'):
-                name = name[:-1]
-            elif name.startswith('\r'):
-                name = name[1:]
+            if i >= length:
+                break
 
             if name != '':
-                if content_list_long[i].startswith('d'):
+                if content_list[length+i].startswith('d'):
                     directories.append(name, marked=True)
-                elif content_list_long[i].startswith('-'):
+                elif content_list[length+i].startswith('-'):
                     files.append(name)
-                elif content_list_long[i].startswith('l'): # symbolic link
+                elif content_list[length+i].startswith('l'): # symbolic link
                     if self.is_folder(name):
                         directories.append(name, marked=True)
                     else:
                         files.append(name)
-
-
-        """ old way of doing it (index=55 not reliable)
-        is_directory = False
-        is_file = False
-        line_index = 0
-        name = ''
-        # each line is similar to:
-        # drwxrwx--x root     sdcard_rw          2016-04-20 20:26 Music
-        for char in content:
-            if line_index == 0:
-                if char == '\n' or char == '\r':
-                    continue
-                elif char == 'd':
-                    is_directory = True
-                elif char == '-':
-                    is_file = True
-
-            if char == '\n' or char == '\r':
-                if is_directory:
-                    directories.append(name, marked=True)
-                elif is_file:
-                    files.append(name)
-                line_index = 0
-                is_directory = False
-                is_file = False
-                name = ''
-            elif line_index > 55: # where folder/file name begins
-                name += char
-            else:
-                line_index += 1
-        """
 
         directories.extend(files)
         return directories
