@@ -94,6 +94,9 @@ This software is licensed under GNU GPL v3, see file LICENSE for more details.
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
 
 ## Change log
+2016-18-06 (0.4.2)
+> Re-enabled file list update (non-concurrently, after a few seconds of no input)
+
 2016-18-06 (0.4.1)
 > Disabled concurrent file list update (it was not ready yet)
 > Added permission checks

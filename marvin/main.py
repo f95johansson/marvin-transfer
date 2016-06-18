@@ -12,6 +12,29 @@ from marvin.config import Config
 import locale # for python 2.7, to set encoding to utf-8 in curses
 locale.setlocale(locale.LC_ALL, '')
 
+
+def print_help():
+    """Print instructions on how to use this program"""
+    print(
+    ("Marvin transfer 0.4.2\n"
+    "To easily transfer file and folder between android device and computer\n"
+    "\n"
+    "UI Usage:\n"
+    "  Use arrow keys to navigate (right/left to enter/exit folders)\n"
+    "  <enter> to transfer currently selected file/folder\n"
+    "  <tab>/<space> to change focus between local computer and android device\n"
+    "  <escape>/<ctrl-c> to exit program\n"
+    "  typing letters works as a filter on the current directory, for faster navigation\n"
+    "  <ctrl-t> Show/hide invisible files/folders (remains after shutdown of utility)"
+    "\n"
+    "Settings:\n"
+    "  Use these arguments to set preferences which will remain after shutdown\n"
+    "  --show-invisible <true/false> - Whether to show invisible files/folders or not\n"
+    "  --sdcard-path <string> - Set path to interval or external storage. Defaults to /storage/emulated/0, but may be different across android devices\n"
+    "  --adb-path <string> - If adb is not in $PATH, you can set it manually\n"
+    "\n")
+    )
+
 def parser(config):
     """Parse all the arguments given from command line"""
     args = sys.argv[1:]
@@ -70,28 +93,6 @@ def parser(config):
                 config['SDCARD_PATH'] = next_arg
 
     return True
-
- 
-def print_help():
-    """Print instructions on how to use this program"""
-    print(
-    ("Marvin transfer 0.4.1\n"
-    "To easily transfer file and folder between android device and computer\n"
-    "\n"
-    "UI Usage:\n"
-    "  Use arrow keys to navigate (right/left to enter/exit folders)\n"
-    "  <enter> to transfer currently selected file/folder\n"
-    "  <tab>/<space> to change focus between local computer and android device\n"
-    "  <escape>/<ctrl-c> to exit program\n""  typing letters works as a filter on the current directory, for faster navigation\n"
-    "  <ctrl-t> Show/hide invisible files/folders (remains after shutdown of utility)"
-    "\n"
-    "Settings:\n"
-    "  Use these arguments to set preferences which will remain after shutdown\n"
-    "  --show-invisible <true/false> - Whether to show invisible files/folders or not\n"
-    "  --sdcard-path <string> - Set path to interval or external storage. Defaults to /storage/emulated/0, but may be different across android devices\n"
-    "  --adb-path <string> - If adb is not in $PATH, you can set it manually\n"
-    "\n")
-    )
 
 
 def main():
