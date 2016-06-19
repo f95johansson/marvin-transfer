@@ -90,7 +90,6 @@ class UI:
             except curses.error: # no input
                 event = -1
 
-            #self.window.insstr(0, 0, repr(event))
             if not self.running:
                 break
 
@@ -254,6 +253,7 @@ class UI:
                 w_ch_list.append(chr(ch))
 
         self.window.nodelay(False)
+        self.window.timeout(self.refresh_time)
 
         w_ch = str().join(w_ch_list)
 
