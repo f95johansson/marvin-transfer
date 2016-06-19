@@ -16,7 +16,7 @@ locale.setlocale(locale.LC_ALL, '')
 def print_help():
     """Print instructions on how to use this program"""
     print(
-    ("Marvin transfer 0.4.2\n"
+    ("Marvin transfer 0.5.0\n"
     "To easily transfer file and folder between android device and computer\n"
     "\n"
     "UI Usage:\n"
