@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='marvin-transfer',
-    version='0.4.2',
+    version='0.5.0',
     author='Fredrik Johansson',
     author_email='f95johansson@gmail.com',
     packages=['marvin'],

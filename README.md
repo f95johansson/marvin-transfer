@@ -8,8 +8,8 @@ Especially on mac transferring files to an android device can be a hassle. The A
 
 ## Install
 ### Requirements
-* Recommended **Python 3.3 or higher** for full character support (utf-8)
-* Also works with **Python 2.7** but only with basic ascii support, future support is not guaranteed
+* Recommended **Python 3.3 or higher** for full support
+* Also works with **Python 2.7** but no promise about future updates
 * This utility uses the **ADB (Android Device Bridge)** as a backend and therefor it must be installed and adb must exist in the $PATH or be set with command line argument (see [Settings](#settings))
 
 *(Tested on python3.5/3.3/2.7 on OSX 10.9 with Nexus 5/9 on Android Marshmallow)*
@@ -83,7 +83,7 @@ This utility is quite new and there's a bunch left to be done. Feel free to cont
     * [X] Bunch of unicode fixes
         * [X] declare utf-8 in all files
         * [X] curses get_wchr() not supported (non-ascii entry)
-* [ ] Extend python 2.7 support beyond ascii (if possible)
+* [X] Extend python 2.7 support beyond ascii (if possible)
 * [ ] Add transfer queue system, be able to transfer while navigating
 
 
@@ -94,6 +94,9 @@ This software is licensed under GNU GPL v3, see file LICENSE for more details.
 Simply put it, if you decide to distribute this software, please make your source code and changes are public as well, as I have done here. Sharing is caring 😊  
 
 ## Change log
+2016-19-06 (0.5.0)
+> Added full unicode support to python 2.7, emojis and everything 👍
+
 2016-18-06 (0.4.2)
 > Re-enabled file list update (non-concurrently, after a few seconds of no input)
 
