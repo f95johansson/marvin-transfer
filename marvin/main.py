@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """main takes care of the upstart of the program"""
-
+from __future__ import unicode_literals
 import sys
 import argparse
 

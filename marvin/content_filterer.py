@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 from marvin.marked_list import MarkedList
-
-class IllegalArgumentError(ValueError):
-    pass
 
 class ContentFilterer:
     """ContentFilter filter a list with one letter at a time"""
@@ -21,16 +19,17 @@ class ContentFilterer:
 
         If filter method been called before, the filter will be adative,
         i.e entries beginning with combined filtered letters.
+        Letter is suppose to be only of length 1 but is allowed to be
+        longer to support surrogate pairs in older python versions
         Returns result
         """
 
-        if (len(letter) > 1):
-            raise IllegalArgumentError('Letter can only by of length 1')
         if len(self._content_history) < 1:
             raise ValueError('No inital content is set')
 
         current_content = self._content_history[len(self._content_history)-1]
-        letters = self._filter_letters + letter
+        self._filter_letters.append(letter)
+        letters = ''.join(self._filter_letters)
         letters_length = len(letters)
         result = MarkedList()
         for i, entry in enumerate(current_content):
@@ -52,7 +51,6 @@ class ContentFilterer:
                 result.append(entry, marked=marked)
 
         self._content_history.append(result)
-        self._filter_letters += letter
         return result
 
     def backstep(self):
@@ -60,7 +58,7 @@ class ContentFilterer:
 
         if len(self._content_history) > 1:
             self._content_history.pop()
-            self._filter_letters = self._filter_letters[:-1]
+            self._filter_letters.pop()
             return self._content_history[len(self._content_history)-1]
         else:
             raise IndexError('Nothing to backtrack to')
@@ -77,10 +75,11 @@ class ContentFilterer:
 
         Entries from get_current_content() will all begin with the returned letters
         """
-        return self._filter_letters
+        return ''.join(self._filter_letters)
 
     def set_initial_content(self, content):
         """Set inital content from which the filters should apply to"""
+        self.clear_content()
         self._content_history = [content]
 
     def is_initialized(self):
@@ -90,4 +89,4 @@ class ContentFilterer:
     def clear_content(self):
         """Clear a content, initial content and filters"""
         self._content_history = []
-        self._filter_letters = ''
+        self._filter_letters = []

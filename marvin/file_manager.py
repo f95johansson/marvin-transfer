@@ -3,10 +3,11 @@
 file_manager contains the appropiet functionallity to to
 communicate with the local file system
 """
-
+from __future__ import unicode_literals
 import os
 if os.name == 'nt':
     import win32api, win32con
+import unicodedata
 
 from marvin.content_filterer import ContentFilterer
 from marvin.marked_list import MarkedList
@@ -20,7 +21,10 @@ class FileManager:
         self.position = 0
         self.position_history = []
         self.permission_denied = False
-        self.current_path = os.getcwd()
+        try:
+            self.current_path = os.getcwdu() # unicode version (<python3)
+        except AttributeError:
+            self.current_path = os.getcwd() # python3
         self._get_current_folder_content()
         self.filterer = ContentFilterer()
 
@@ -29,7 +33,14 @@ class FileManager:
         return self.folder_content
 
     def update_listdir(self):
-        self._get_current_folder_content()
+        if not self.filterer.is_initialized():
+            self._get_current_folder_content()
+        else:
+            letters = self.filter_letters()
+            self.filterer.set_initial_content(self._get_current_folder_content())
+            for letter in letters:
+                self.folder_content = self.filterer.filter(letter)
+
 
     def _get_current_folder_content(self):
         """Get all files and folders in the current folder"""
@@ -43,6 +54,11 @@ class FileManager:
             directories = MarkedList()
             files = MarkedList()
             for content in dir_content:
+                # Mac OSX uses a special decomposed utf-8 for its file system
+                # ä = a¨
+                # This converts it back to normal utf-8:
+                content = unicodedata.normalize('NFC', content)
+
                 content_path = os.path.join(self.current_path, content)
                 if not self.invisible_files and is_hidden(content_path):
                     continue
@@ -139,8 +155,12 @@ class FileManager:
         """
         if not self.filterer.is_initialized():
             self.filterer.set_initial_content(self.folder_content)
-        self.folder_content = self.filterer.filter(letter)
-        self.reset_position()
+        try:
+            self.folder_content = self.filterer.filter(letter)
+        except ValueError:
+            raise ValueError('Non-supported character')
+        else:
+            self.reset_position()
 
     def backstep_filter(self):
         """Return filted content to previus step(letter)"""

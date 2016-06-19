@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Takes care of the ui of the application"""
-
+from __future__ import unicode_literals
 import curses
 import os
 import sys
@@ -8,7 +8,6 @@ from math import floor
 from math import ceil
 
 from marvin.ui_column import UIColumn
-from marvin.adb import ADBError
 
 def run(func):
     """Wrapper for a main run function"""
@@ -74,8 +73,6 @@ class UI:
 
     def run(self):
         """A loop which will fire event listeners based on user input"""
-        if sys.version_info[0] < 3:
-            self.print_status_bar('Please upgrade to python3 for non-ascii support')
 
         self.window.timeout(self.refresh_time)
 
@@ -93,6 +90,7 @@ class UI:
             except curses.error: # no input
                 event = -1
 
+            #self.window.insstr(0, 0, repr(event))
             if not self.running:
                 break
 
@@ -106,55 +104,60 @@ class UI:
             #   13 = ctrl-m = \r
 
             try:
-                if event == -1:
-                    self.event_listeners[UI.event.REFRESH]()
+                if type(event) == int or len(event) < 2:
+                    if event == -1:
+                        self.event_listeners[UI.event.REFRESH]()
 
-                elif event == curses.KEY_RESIZE:
-                    self.resize()
-                    self.event_listeners[UI.event.RESIZE](self.width, self.height)
+                    elif event == curses.KEY_RESIZE:
+                        self.resize()
+                        self.event_listeners[UI.event.RESIZE](self.width, self.height)
 
-                elif event == curses.KEY_UP:
-                    self.event_listeners[UI.event.UP]()
+                    elif event == curses.KEY_UP:
+                        self.event_listeners[UI.event.UP]()
 
-                elif event == curses.KEY_DOWN:
-                    self.event_listeners[UI.event.DOWN]()
+                    elif event == curses.KEY_DOWN:
+                        self.event_listeners[UI.event.DOWN]()
 
-                elif event == curses.KEY_LEFT:
-                    self.event_listeners[UI.event.LEFT]()
+                    elif event == curses.KEY_LEFT:
+                        self.event_listeners[UI.event.LEFT]()
 
-                elif event == curses.KEY_RIGHT:
-                    self.event_listeners[UI.event.RIGHT]()
+                    elif event == curses.KEY_RIGHT:
+                        self.event_listeners[UI.event.RIGHT]()
 
-                elif event == curses.KEY_ENTER or event == 10 or event == '\n' or event == '\r':
-                    self.event_listeners[UI.event.ENTER]()
+                    elif event == curses.KEY_ENTER or event == 10 or event == '\n' or event == '\r':
+                        self.event_listeners[UI.event.ENTER]()
 
-                elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
-                        or (type(event) == str and (ord(event) == 8 or ord(event) == 127)):
-                    self.event_listeners[UI.event.BACKSPACE]()
+                    elif event == curses.KEY_BACKSPACE or event == 8 or event == 127 \
+                            or (is_str(event) and (ord(event) == 8 or ord(event) == 127)):
+                        self.event_listeners[UI.event.BACKSPACE]()
 
-                elif event == 9 or event == '\t':
-                    self.event_listeners[UI.event.TAB]()
+                    elif event == 9 or event == '\t':
+                        self.event_listeners[UI.event.TAB]()
 
-                elif event == 32 or event == ' ':
-                    self.event_listeners[UI.event.SPACE]()
+                    elif event == 32 or event == ' ':
+                        self.event_listeners[UI.event.SPACE]()
 
-                elif event == 4 or (type(event) == str and ord(event) == 4):
-                    self.event_listeners[UI.event.CTRL_D]()
+                    elif event == 4 or (is_str(event) and ord(event) == 4):
+                        self.event_listeners[UI.event.CTRL_D]()
 
-                elif event == 20 or (type(event) == str and ord(event) == 20):
-                    self.event_listeners[UI.event.CTRL_T]()
+                    elif event == 20 or (is_str(event) and ord(event) == 20):
+                        self.event_listeners[UI.event.CTRL_T]()
 
-                elif event == 27 or (type(event) == str and ord(event) == 27): # Esc or Alt
-                    self.window.nodelay(True)
-                    c = self.window.getch()
-                    if c == -1 or c == 27: # Esc
-                        self.event_listeners[UI.event.ESCAPE]()
-                    else: # Alt
-                        pass
-                    self.window.nodelay(False)
+                    elif event == 27 or (is_str(event) and ord(event) == 27): # Esc or Alt
+                        self.window.nodelay(True)
+                        c = self.window.getch()
+                        if c == -1 or c == 27: # Esc
+                            self.event_listeners[UI.event.ESCAPE]()
+                        else: # Alt
+                            pass
+                        self.window.nodelay(False)
 
-                elif type(event) == str: # Assumes letter
+                    elif is_str(event): # Assumes letter
+                        self.event_listeners[UI.event.LETTER](event)
+
+                else: # len(event) > 2 (occurs with non-ascii characters in python2.7)
                     self.event_listeners[UI.event.LETTER](event)
+
 
             except curses.error:
                 raise UIError('Invalid UI operation')
@@ -175,7 +178,7 @@ class UI:
         """Clears the entire window if no column is supplied, otherwise only column"""
         if column == None:
             self.window.clear()
-            self.window.vline(1, self.left_column.width, '|', self.height-2)
+            self.window.vline(1, self.left_column.width, ord('|'), self.height-2)
         elif column == self.left_column:
             column.clear()
             self.left_column.refresh( 0,0, 2,1, self.height-2, self.left_column.width-1)
@@ -194,12 +197,18 @@ class UI:
         string = ' {title: <{lfill}} {rtitle: <{rfill}} ' \
             .format(title=self.left_title, lfill=str(self.left_column.width), \
                     rtitle=self.right_title, rfill=str(self.right_column.width))
-        self.window.addstr(0, 0, string, curses.A_REVERSE)
+        try:
+            self.window.addstr(0, 0, string, curses.A_REVERSE)
+        except UnicodeEncodeError:
+            self.window.addstr(0, 0, string.encode('utf-8'), curses.A_REVERSE)
 
     def print_status_bar(self, string):
         """Print message in status bar, will desepear on clear()"""
         self.clear_status_bar()
-        self.window.addnstr(self.height-2, 3, string, self.width-4)
+        try:
+            self.window.addnstr(self.height-2, 3, string, self.width-4)
+        except UnicodeEncodeError:
+            self.window.addnstr(self.height-2, 3, string.encode('utf-8'), self.width-4)
         self.window.refresh()
 
     def clear_status_bar(self):
@@ -222,7 +231,7 @@ class UI:
         self.window.clear()
         self.left_column.resize(self.height-3, floor((self.width-3)/2))
         self.right_column.resize(self.height-3, ceil((self.width-3)/2))
-        self.window.vline(1, self.left_column.width, '|', self.height-2)
+        self.window.vline(1, self.left_column.width, ord('|'), self.height-2)
         self._update_title_bar()
 
     def get_wch_compatibility_layer(self):
@@ -246,10 +255,11 @@ class UI:
 
         self.window.nodelay(False)
 
-        w_ch = ''.join(w_ch_list)
+        w_ch = str().join(w_ch_list)
 
-        return -1 if len(w_ch_list) > 1 else w_ch_list[0]
-
-
+        return w_ch.decode('utf-8')
 
 
+
+def is_str(string):
+    return type(string) == str or type(string) == unicode

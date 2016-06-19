@@ -3,10 +3,11 @@
 adb contains the appropiet functionallity to use the adb (Android device bride)
 command to communicate with a android device, on a file system level
 """
-
+from __future__ import unicode_literals
 import subprocess
 from subprocess import check_output
 from os import path
+import unicodedata
 
 from marvin.file_manager import FileManager
 from marvin.content_filterer import ContentFilterer
@@ -70,6 +71,7 @@ class ADB(FileManager):
         except:
             pass
         self.folder_content = output_list
+        return self.folder_content
 
     def _sort_folders_from_files_in_ls(self, content):
         directories = MarkedList()
@@ -83,6 +85,8 @@ class ADB(FileManager):
         for i, name in enumerate(content_list):
             if i >= length:
                 break
+
+            name = unicodedata.normalize('NFC', name) # remove potential decomposed utf-8
 
             if name != '':
                 if content_list[length+i].startswith('d'):
@@ -153,6 +157,9 @@ class ADB(FileManager):
                     for output in execute(command):
                         output_printer(_remove_newlines(output))
                     output_printer('Transfer success ({})'.format(_remove_newlines(output)))
+
+                except UnboundLocalError: # no output (happens with empty files)
+                    output_printer('Transfer success')
                 except KeyboardInterrupt:
                     output_printer('Transfer canceled')
                 except subprocess.CalledProcessError:
@@ -179,6 +186,9 @@ class ADB(FileManager):
                         for output in execute(command):
                             output_printer(_remove_newlines(output))
                         output_printer('Transfer success ({})'.format(_remove_newlines(output)))
+
+                    except UnboundLocalError: # no output (happens with empty files)
+                        output_printer('Transfer success')
                     except KeyboardInterrupt:
                         output_printer('Transfer canceled')
                     except subprocess.CalledProcessError:
@@ -247,9 +257,8 @@ def execute(command):
     Makes it possible to perform actions on the continues output 
     asynchronous to the command running.
     """
-
     popen = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    stdout_lines = iter(popen.stderr.readline, "")
+    stdout_lines = iter(popen.stderr.readline, '')
     for stdout_line in stdout_lines:
         yield stdout_line
 

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 class MarkedList(list):
     """MarkedList expand the normal list by adding the abbility

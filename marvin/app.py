@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Contains App class which runs the whole application"""
-
+from __future__ import unicode_literals
 import threading
 
 from marvin.ui import UI
@@ -61,9 +61,6 @@ class App:
         self.ui.run() # blocking
 
 
-    def stop_update_thread(self):
-        """Will stop update file list thread if not already stopped"""
-        self._update_thread.cancel()
 
     def refresh_file_lists(self):
         """Refresh content for both file lists"""
@@ -71,6 +68,7 @@ class App:
         self.fm.update_listdir()
         self.update_file_list(manager=self.adb, manager_column=self.ui.right_column)
         self.update_file_list(manager=self.fm, manager_column=self.ui.left_column)
+
 
     def update_file_list(self, manager=None, manager_column=None, empty_message='--Empty--'):
         """Update list of file and folders
@@ -167,9 +165,13 @@ class App:
 
     def letter_input(self, letter):
         """Will filter content in focused column to those beginning with letter"""
-        self.focused.filter(letter)
-        self.update_file_list(empty_message='--No match--')
-        self.ui.print_status_bar('Filtering: {}'.format(self.focused.filter_letters()))
+        try:
+            self.focused.filter(letter)
+        except ValueError as e:
+            self.ui.print_status_bar('Filtering: --{}--'.format(e))
+        else:
+            self.update_file_list(empty_message='--No match--')
+            self.ui.print_status_bar('Filtering: {}'.format(self.focused.filter_letters()))
 
     def backspace(self):
         """Will remove one letter in filter"""

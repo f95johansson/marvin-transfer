@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import curses
 from marvin.marked_list import MarkedList
 
@@ -87,44 +88,37 @@ class UIColumn:
         try:
             self.window.addstr(index, 0, string)
         except UnicodeEncodeError:
-            self.window.addstr(index, 0, self.ascii_message[:self.width-1])
-        except curses.error:
-            raise Exception(string)
+            self.window.addstr(index, 0, string.encode('utf-8'))
 
     def _add_background(self, index):
         string = self.content[index][:self.width-1]
         try:
             self.window.addstr(index, 0, string, curses.A_REVERSE)
         except UnicodeEncodeError:
-            self.window.addstr(index, 0, self.ascii_message[:self.width-1], curses.A_REVERSE)
+            self.window.addstr(index, 0, string.encode('utf-8'), curses.A_REVERSE)
 
     def _add_underline(self, index):
         string = self.content[index][:self.width-1]
         try:
             self.window.addstr(index, 0, string, curses.A_UNDERLINE)
         except UnicodeEncodeError:
-            self.window.addstr(index, 0, self.ascii_message[:self.width-1], curses.A_UNDERLINE)
+            self.window.addstr(index, 0, string.encode('utf-8'), curses.A_UNDERLINE)
 
     def _add_bold(self, index):
         string = self.content[index][:self.width-1]
         try:
             self.window.addstr(index, 0, string, curses.A_BOLD)
         except UnicodeEncodeError:
-            self.window.addstr(index, 0, self.ascii_message[:self.width-1], curses.A_BOLD)
+            self.window.addstr(index, 0, string.encode('utf-8'), curses.A_BOLD)
 
     def _remove_background(self, index):
-        string = self.content[index][:self.width-1]
         try:
-            try:
-                if self.content.is_marked(index):
-                    self._add_bold(index)
-                else:
-                    self.window.addstr(index, 0, string)
-            except AttributeError:
-                self.window.addstr(index, 0, string)
-
-        except UnicodeEncodeError:
-            self.window.addstr(index, 0, self.ascii_message[:self.width-1])
+            if self.content.is_marked(index):
+                self._add_bold(index)
+            else:
+                self._add_string(index)
+        except AttributeError:
+            self._add_string(index)
 
 
     def focus(self):
